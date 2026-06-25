@@ -2,20 +2,8 @@
 
 import { requireTutorSession } from "@/lib/auth/session";
 import { importPaper } from "@/lib/import/import-paper";
-import { parsePaperJsonText, type PaperValidationSummary } from "@/lib/import/k349-schema";
-
-export type ImportFormState = {
-  status: "idle" | "success" | "error";
-  message?: string;
-  errors?: string[];
-  summary?: PaperValidationSummary;
-  jsonText?: string;
-};
-
-export const initialImportFormState: ImportFormState = {
-  status: "idle",
-  jsonText: ""
-};
+import { parsePaperJsonText } from "@/lib/import/k349-schema";
+import type { ImportFormState } from "./form-state";
 
 export async function importPaperAction(
   _previousState: ImportFormState,

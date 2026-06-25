@@ -1,11 +1,8 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
-import {
-  importPaperAction,
-  initialImportFormState,
-  type ImportFormState
-} from "@/app/admin/import/actions";
+import { importPaperAction } from "@/app/admin/import/actions";
+import { initialImportFormState, type ImportFormState } from "@/app/admin/import/form-state";
 
 function SubmitButtons() {
   const status = useFormStatus();
