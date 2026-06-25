@@ -12,6 +12,12 @@ test.describe("core student and tutor flows", () => {
     await expect(page.getByLabel("Password")).toBeVisible();
   });
 
+  test("paper detail routes preserve the papers path", async ({ page }) => {
+    await page.goto("/papers/example-paper");
+    await expect(page).toHaveURL("/");
+    await expect(page.getByRole("heading", { name: "G3 Computing Practice Papers" })).toBeVisible();
+  });
+
   test("configured seeded paper flow", async ({ page }) => {
     test.skip(!process.env.E2E_ACCESS_CODE || !process.env.E2E_STUDENT_NAME, "Set E2E_ACCESS_CODE and E2E_STUDENT_NAME for seeded paper coverage.");
 
