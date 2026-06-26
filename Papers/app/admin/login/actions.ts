@@ -6,10 +6,10 @@ import { verifyTutorPassword } from "@/lib/auth/password";
 
 export async function loginTutorAction(formData: FormData) {
   const password = String(formData.get("password") ?? "");
-  const valid = await verifyTutorPassword(password);
+  const result = await verifyTutorPassword(password);
 
-  if (!valid) {
-    redirect("/admin/login?error=invalid");
+  if (!result.ok) {
+    redirect(`/admin/login?error=${result.reason}`);
   }
 
   setTutorSession();

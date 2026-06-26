@@ -1,3 +1,4 @@
+import React from "react";
 import type { ResponseSchema, StudentAnswer } from "@/lib/domain";
 
 export function AnswerControls({
@@ -10,6 +11,10 @@ export function AnswerControls({
   answer: StudentAnswer;
 }) {
   const value = typeof answer === "object" && answer && "value" in answer ? answer.value ?? "" : "";
+  const values =
+    typeof answer === "object" && answer && "values" in answer && Array.isArray(answer.values)
+      ? answer.values
+      : [];
 
   if (responseSchema?.kind === "single_choice") {
     return (
@@ -22,6 +27,25 @@ export function AnswerControls({
               name={`part-${partId}`}
               value={option.value}
               defaultChecked={value === option.value}
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
+      </fieldset>
+    );
+  }
+
+  if (responseSchema?.kind === "multiple_choice") {
+    return (
+      <fieldset className="answer-group">
+        <legend className="meta">Tick all that apply</legend>
+        {responseSchema.options.map((option) => (
+          <label className="checkbox-row" key={option.value}>
+            <input
+              type="checkbox"
+              name={`part-${partId}`}
+              value={option.value}
+              defaultChecked={values.includes(option.value)}
             />
             <span>{option.label}</span>
           </label>

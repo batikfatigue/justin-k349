@@ -75,14 +75,6 @@ export const k349Paper: ImportedPaper = {
       number: "2",
       title: "Python Variables And Algorithms",
       marks: 8,
-      stimulus: [
-        {
-          type: "code",
-          language: "python",
-          title: "Password generator",
-          code: "import random\n\ntemporary_password = \"\"\n\nfor count in range(6):\n    number = random.randint(33, 126)\n    password_char = chr(number)\n    if password_char not in temporary_password:\n        temporary_password = temporary_password + password_char\n\nprint(temporary_password)"
-        }
-      ],
       parts: [
         {
           id: "q2a",
@@ -115,6 +107,14 @@ export const k349Paper: ImportedPaper = {
           type: "structured_response",
           prompt: "Describe how the password program executes and identify one bug.",
           marks: 6,
+          stimulus: [
+            {
+              type: "code",
+              language: "python",
+              title: "Password generator",
+              code: "import random\n\ntemporary_password = \"\"\n\nfor count in range(6):\n    number = random.randint(33, 126)\n    password_char = chr(number)\n    if password_char not in temporary_password:\n        temporary_password = temporary_password + password_char\n\nprint(temporary_password)"
+            }
+          ],
           response: { kind: "structured_response", lines: 8 },
           marking: {
             mode: "rubric_ai",
@@ -197,7 +197,7 @@ export const k349Paper: ImportedPaper = {
               { id: "ii", expectedOutput: "2", marks: 1 },
               { id: "iii", expectedOutput: "20", marks: 1 },
               { id: "iv", expectedOutput: "7", marks: 1 },
-              { id: "v", expectedOutput: "gramm", marks: 1 },
+              { id: "v", expectedOutput: "gram", marks: 1 },
               { id: "vi", expectedOutput: "nna", marks: 1 },
               { id: "vii", expectedOutput: "7", marks: 1 },
               { id: "viii", expectedOutput: "8.0", marks: 1 }
@@ -247,8 +247,8 @@ export const k349Paper: ImportedPaper = {
             mode: "error_correction",
             expectedLineNumber: "04",
             acceptedCorrectedLines: ["    print(x)"],
-            lineNumberMarks: 1,
-            correctionMarks: 0
+            lineNumberMarks: 0,
+            correctionMarks: 1
           }
         }
       ]
@@ -256,7 +256,7 @@ export const k349Paper: ImportedPaper = {
     {
       id: "q5",
       number: "5",
-      title: "Flowcharts And Code",
+      title: "Team Qualification Algorithm",
       marks: 6,
       stimulus: [
         {

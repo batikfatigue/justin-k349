@@ -14,6 +14,24 @@ describe("local marking", () => {
     expect(markExact({ value: "if-else" }, { mode: "exact", acceptedAnswers: ["selection", "if-else"] }, 1).score).toBe(1);
   });
 
+  it("marks exact multiple-choice selections independent of checkbox order", () => {
+    const result = markExact(
+      { values: ["test_refine_code", "deploy_code", "design_solutions"] },
+      {
+        mode: "exact",
+        acceptedAnswers: ["deploy_code;design_solutions;test_refine_code"],
+        caseSensitive: false
+      },
+      1
+    );
+
+    expect(result.score).toBe(1);
+    expect(result.exactMarkingDetails).toMatchObject({
+      submitted: "deploy_code;design_solutions;test_refine_code",
+      matched: true
+    });
+  });
+
   it("marks code-output table rows independently", () => {
     const result = markCodeOutputTable(
       { rows: { a: "False", b: "wrong" } },
@@ -55,5 +73,20 @@ describe("local marking", () => {
       lineMatched: true,
       correctionMatched: true
     });
+  });
+
+  it("requires one indentation level for the q4b while-loop correction", () => {
+    const schema = {
+      mode: "error_correction" as const,
+      expectedLineNumber: "04",
+      acceptedCorrectedLines: ["    print(x)"],
+      lineNumberMarks: 0,
+      correctionMarks: 1,
+      caseSensitive: true
+    };
+
+    expect(markErrorCorrection({ lineNumber: "04", correctedLine: "    print(x)" }, schema, 1).score).toBe(1);
+    expect(markErrorCorrection({ lineNumber: "04", correctedLine: "\tprint(x)" }, schema, 1).score).toBe(1);
+    expect(markErrorCorrection({ lineNumber: "04", correctedLine: "print(x)" }, schema, 1).score).toBe(0);
   });
 });

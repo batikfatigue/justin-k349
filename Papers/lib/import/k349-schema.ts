@@ -73,6 +73,10 @@ const responseSchema = z.discriminatedUnion("kind", [
     options: z.array(z.object({ value: nonEmpty, label: nonEmpty })).min(2)
   }),
   z.object({
+    kind: z.literal("multiple_choice"),
+    options: z.array(z.object({ value: nonEmpty, label: nonEmpty })).min(2)
+  }),
+  z.object({
     kind: z.enum(["short_text", "structured_response", "flowchart_interpretation", "code_writing"]),
     lines: z.number().int().positive().optional(),
     language: nonEmpty.optional()
@@ -237,6 +241,14 @@ function validateQuestion(
         code: z.ZodIssueCode.custom,
         path: ["questions", questionIndex, "parts", partIndex, "response"],
         message: "single_choice parts must provide a single_choice response with options."
+      });
+    }
+
+    if (part.type === "multiple_choice" && part.response?.kind !== "multiple_choice") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["questions", questionIndex, "parts", partIndex, "response"],
+        message: "multiple_choice parts must provide a multiple_choice response with options."
       });
     }
 

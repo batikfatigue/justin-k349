@@ -37,6 +37,7 @@ The system SHALL support the K349 v1 part types needed by the observed paper sty
 Supported part types MUST be:
 
 - `single_choice`
+- `multiple_choice`
 - `short_text`
 - `structured_response`
 - `code_output_table`

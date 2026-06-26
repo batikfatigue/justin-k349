@@ -73,7 +73,7 @@ Use Drizzle ORM with Postgres.js. Vercel runtime traffic should use Supabase's t
 
 The importer must validate `schemaVersion`, `paperId`, `title`, `syllabus`, `mode`, `status`, `totalMarks`, `accessCodes`, and `questions`. Each question must include `id`, `number`, `title`, `marks`, and `parts`, with optional `outcomeId`, `variantGroupId`, `targetAnswerId`, `difficulty`, and `stimulus`. Each part must include `id`, `label`, `type`, `prompt`, `marks`, and `marking`, with optional `stimulus`, `response`, and `studentFeedbackPolicy`.
 
-Supported part types are `single_choice`, `short_text`, `structured_response`, `code_output_table`, `error_correction`, `flowchart_interpretation`, and `code_writing`.
+Supported part types are `single_choice`, `multiple_choice`, `short_text`, `structured_response`, `code_output_table`, `error_correction`, `flowchart_interpretation`, and `code_writing`.
 
 Supported stimuli are `text`, `code`, `table`, `expected_output`, and `flowchart`. Flowcharts are stored as structured nodes and edges with an optional `sourceImage` reference for tutor context.
 

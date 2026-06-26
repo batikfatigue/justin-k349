@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminNav } from "@/components/admin/AdminNav";
+import { PromptText } from "@/components/student/PromptText";
 import { StimulusRenderer } from "@/components/student/StimulusRenderer";
 import { requireTutorSession } from "@/lib/auth/session";
 import { getAdminAttemptDetail } from "@/lib/admin/data";
@@ -38,41 +39,47 @@ export default async function AdminAttemptDetailPage({ params }: { params: { att
               <p className="meta">{question.marks} marks</p>
             </div>
             <StimulusRenderer stimuli={question.stimulus} />
-            {question.parts.map((part) => (
-              <section className="card stack" key={part.id}>
-                <div>
-                  <h3>
-                    {part.label} <span className="meta">[{part.marks}]</span>
-                  </h3>
-                  <p className="body-copy">{part.prompt}</p>
-                </div>
-                <StimulusRenderer stimuli={part.stimulus} />
-                <div className="grid two">
-                  <JsonBlock title="Student answer" value={part.answer?.answer ?? {}} />
-                  <JsonBlock title="Marking schema" value={part.markingSchema} />
-                </div>
-                <div className="grid two">
-                  <div>
-                    <p className="meta">Score</p>
-                    <p>
-                      <strong>
-                        {part.answer?.score ?? 0} / {part.answer?.maxScore ?? part.marks}
-                      </strong>{" "}
-                      <span className="status-pill">{part.answer?.markingStatus ?? "pending"}</span>
-                    </p>
+            {question.parts.map((part) => {
+              const leadingStimuli = part.stimulus.filter((stimulus) => stimulus.type === "code");
+              const trailingStimuli = part.stimulus.filter((stimulus) => stimulus.type !== "code");
+
+              return (
+                <section className="card stack" key={part.id}>
+                  <div className="stack">
+                    <h3>
+                      {part.label} <span className="meta">[{part.marks}]</span>
+                    </h3>
+                    <StimulusRenderer stimuli={leadingStimuli} />
+                    <PromptText text={part.prompt} />
                   </div>
-                  <div>
-                    <p className="meta">Student feedback</p>
-                    <p>{part.answer?.studentFeedback ?? "No feedback stored yet."}</p>
+                  <StimulusRenderer stimuli={trailingStimuli} />
+                  <div className="grid two">
+                    <JsonBlock title="Student answer" value={part.answer?.answer ?? {}} />
+                    <JsonBlock title="Marking schema" value={part.markingSchema} />
                   </div>
-                </div>
-                <div className="grid two">
-                  <JsonBlock title="Tutor rationale" value={part.answer?.tutorRationale ?? ""} />
-                  <JsonBlock title="Missing rubric points" value={part.answer?.missingRubricPoints ?? []} />
-                </div>
-                <JsonBlock title="Exact marking audit" value={part.answer?.exactMarkingDetails ?? null} />
-              </section>
-            ))}
+                  <div className="grid two">
+                    <div>
+                      <p className="meta">Score</p>
+                      <p>
+                        <strong>
+                          {part.answer?.score ?? 0} / {part.answer?.maxScore ?? part.marks}
+                        </strong>{" "}
+                        <span className="status-pill">{part.answer?.markingStatus ?? "pending"}</span>
+                      </p>
+                    </div>
+                    <div>
+                      <p className="meta">Student feedback</p>
+                      <p>{part.answer?.studentFeedback ?? "No feedback stored yet."}</p>
+                    </div>
+                  </div>
+                  <div className="grid two">
+                    <JsonBlock title="Tutor rationale" value={part.answer?.tutorRationale ?? ""} />
+                    <JsonBlock title="Missing rubric points" value={part.answer?.missingRubricPoints ?? []} />
+                  </div>
+                  <JsonBlock title="Exact marking audit" value={part.answer?.exactMarkingDetails ?? null} />
+                </section>
+              );
+            })}
           </article>
         ))}
       </section>

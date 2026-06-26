@@ -7,6 +7,7 @@ export default function TutorLoginPage({
   searchParams: { error?: string };
 }) {
   const hasError = searchParams.error === "invalid";
+  const hasConfigError = searchParams.error === "misconfigured";
 
   return (
     <main className="section">
@@ -16,6 +17,9 @@ export default function TutorLoginPage({
         <p className="body-copy">Use the configured tutor password to review imports and attempts.</p>
       </header>
       {hasError ? <p className="notice error">The password did not match.</p> : null}
+      {hasConfigError ? (
+        <p className="notice error">Tutor sign-in is not configured. Set TUTOR_PASSWORD_HASH to a bcrypt hash.</p>
+      ) : null}
       <form action={loginTutorAction} className="card stack">
         <label>
           Password

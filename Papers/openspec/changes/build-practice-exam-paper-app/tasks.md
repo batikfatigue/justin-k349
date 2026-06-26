@@ -17,7 +17,7 @@
 
 - [x] 3.1 Implement single-password tutor login, logout, session cookie handling, and admin route protection.
 - [x] 3.2 Define the v1 K349 paper JSON Zod schema for paper metadata, access codes, questions, parts, stimuli, flowcharts, response schemas, marking schemas, and variant metadata.
-- [x] 3.3 Validate supported part types: `single_choice`, `short_text`, `structured_response`, `code_output_table`, `error_correction`, `flowchart_interpretation`, and `code_writing`.
+- [x] 3.3 Validate supported part types: `single_choice`, `multiple_choice`, `short_text`, `structured_response`, `code_output_table`, `error_correction`, `flowchart_interpretation`, and `code_writing`.
 - [x] 3.4 Validate supported stimulus types: `text`, `code`, `table`, `expected_output`, and structured `flowchart` nodes/edges with optional `sourceImage`.
 - [x] 3.5 Validate supported marking modes: `exact`, `code_output_table`, `error_correction`, and `rubric_ai`.
 - [x] 3.6 Validate parent/part mark totals, required field paths, unsupported values, and malformed flowchart references with clear admin-facing errors.
@@ -32,7 +32,7 @@
 - [x] 4.3 Build paper intro and start/reattempt creation behavior with attempt numbering.
 - [x] 4.4 Build the one-parent-question-at-a-time UI that renders nested answerable parts.
 - [x] 4.5 Render text, code, table, expected-output, and structured flowchart stimuli while preserving indentation, line breaks, rows, columns, and labels.
-- [x] 4.6 Build response controls for single choice, short text, structured response, code output tables, error correction, flowchart interpretation, and code writing.
+- [x] 4.6 Build response controls for single choice, multiple choice, short text, structured response, code output tables, error correction, flowchart interpretation, and code writing.
 - [x] 4.7 Persist each part answer on navigation and restore saved part answers when students revisit questions.
 - [x] 4.8 Implement stopwatch display, heartbeat updates, submission, elapsed-time storage, and abandoned-attempt timeout handling.
 - [x] 4.9 Build the submitted results page with total score and broad per-part feedback only.

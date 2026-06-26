@@ -1,5 +1,6 @@
 export const partTypes = [
   "single_choice",
+  "multiple_choice",
   "short_text",
   "structured_response",
   "code_output_table",
@@ -68,6 +69,10 @@ export type Stimulus =
 export type ResponseSchema =
   | {
       kind: "single_choice";
+      options: Array<{ value: string; label: string }>;
+    }
+  | {
+      kind: "multiple_choice";
       options: Array<{ value: string; label: string }>;
     }
   | {
@@ -173,6 +178,7 @@ export type StudentAnswer =
   | string
   | {
       value?: string;
+      values?: string[];
       rows?: Record<string, string>;
       lineNumber?: string;
       correctedLine?: string;

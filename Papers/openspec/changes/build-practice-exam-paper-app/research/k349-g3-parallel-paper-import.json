@@ -32,36 +32,40 @@
         {
           "id": "q1a",
           "label": "1(a)",
-          "type": "structured_response",
+          "type": "multiple_choice",
           "prompt": "Tick all applicable boxes to identify the stages included in the simplified sprint cycle taught for this paper.",
           "marks": 1,
-          "stimulus": [
-            {
-              "type": "table",
-              "columns": ["Option"],
-              "rows": [
-                ["deploy code"],
-                ["feedback and review"],
-                ["design solutions"],
-                ["test & refine code"],
-                ["consolidate requirements"]
-              ]
-            }
-          ],
           "response": {
-            "kind": "structured_response",
-            "lines": 2
-          },
-          "marking": {
-            "mode": "rubric_ai",
-            "maxScore": 1,
-            "modelAnswer": "deploy code; design solutions; test & refine code",
-            "rubricPoints": [
+            "kind": "multiple_choice",
+            "options": [
               {
-                "text": "Selects deploy code, design solutions, and test & refine code, without selecting feedback and review or consolidate requirements.",
-                "marks": 1
+                "value": "deploy_code",
+                "label": "deploy code"
+              },
+              {
+                "value": "feedback_review",
+                "label": "feedback and review"
+              },
+              {
+                "value": "design_solutions",
+                "label": "design solutions"
+              },
+              {
+                "value": "test_refine_code",
+                "label": "test & refine code"
+              },
+              {
+                "value": "consolidate_requirements",
+                "label": "consolidate requirements"
               }
             ]
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "deploy_code;design_solutions;test_refine_code"
+            ],
+            "caseSensitive": false
           }
         },
         {
@@ -132,14 +136,6 @@
       "outcomeId": "python-variables-and-algorithms",
       "variantGroupId": "python-variable-names-random-code",
       "difficulty": "standard",
-      "stimulus": [
-        {
-          "type": "code",
-          "title": "Prize code generator",
-          "language": "python",
-          "code": "import random\n\nprize_code = \"\"\n\nfor count in range(5):\n    number = random.randint(65, 90)\n    letter = chr(number)\n\n    if letter not in prize_code:\n        prize_code = prize_code + letter\n\nprint(prize_code)"
-        }
-      ],
       "parts": [
         {
           "id": "q2a",
@@ -186,6 +182,14 @@
           "type": "structured_response",
           "prompt": "A school event organiser writes a program to generate a random 5-letter prize code. Each prize code should contain 5 unique uppercase letters.\n\nDescribe in detail how this program is executed and identify one bug in the program.",
           "marks": 6,
+          "stimulus": [
+            {
+              "type": "code",
+              "title": "Prize code generator",
+              "language": "python",
+              "code": "import random\n\nprize_code = \"\"\n\nfor count in range(5):\n    number = random.randint(65, 90)\n    letter = chr(number)\n\n    if letter not in prize_code:\n        prize_code = prize_code + letter\n\nprint(prize_code)"
+            }
+          ],
           "response": {
             "kind": "structured_response",
             "lines": 8
@@ -460,8 +464,8 @@
             "acceptedCorrectedLines": [
               "    print(x)"
             ],
-            "lineNumberMarks": 1,
-            "correctionMarks": 0,
+            "lineNumberMarks": 0,
+            "correctionMarks": 1,
             "caseSensitive": true
           }
         }
@@ -470,7 +474,7 @@
     {
       "id": "q5",
       "number": "5",
-      "title": "Flowcharts And Code",
+      "title": "Team Qualification Algorithm",
       "marks": 6,
       "outcomeId": "flowchart-selection-python",
       "variantGroupId": "selection-flowchart-code",
@@ -620,7 +624,7 @@
     {
       "id": "q6",
       "number": "6",
-      "title": "Flowcharts And Iteration",
+      "title": "Countdown Algorithm",
       "marks": 6,
       "outcomeId": "flowchart-iteration-python",
       "variantGroupId": "iteration-flowchart-code",

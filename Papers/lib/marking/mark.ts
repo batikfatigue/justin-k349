@@ -120,7 +120,9 @@ export function markErrorCorrection(
   const correctionMarks = schema.correctionMarks ?? Math.max(maxScore - lineNumberMarks, 0);
   const lineMatched = normalize(submittedLineNumber, true) === normalize(schema.expectedLineNumber, true);
   const correctionMatched = schema.acceptedCorrectedLines.some(
-    (line) => normalize(submittedCorrectedLine, schema.caseSensitive) === normalize(line, schema.caseSensitive)
+    (line) =>
+      normalizeCodeCorrection(submittedCorrectedLine, schema.caseSensitive) ===
+      normalizeCodeCorrection(line, schema.caseSensitive)
   );
   const score = (lineMatched ? lineNumberMarks : 0) + (correctionMatched ? correctionMarks : 0);
 
@@ -194,6 +196,10 @@ function answerToString(answer: StudentAnswer) {
   }
 
   if (typeof answer === "object" && answer) {
+    if (Array.isArray(answer.values)) {
+      return [...answer.values].sort().join(";");
+    }
+
     return answer.value ?? "";
   }
 
@@ -202,6 +208,11 @@ function answerToString(answer: StudentAnswer) {
 
 function normalize(value: string | number | boolean, caseSensitive = false) {
   const text = String(value).trim();
+  return caseSensitive ? text : text.toLowerCase();
+}
+
+function normalizeCodeCorrection(value: string, caseSensitive = false) {
+  const text = value.replace(/\t/g, "    ").trimEnd();
   return caseSensitive ? text : text.toLowerCase();
 }
 

@@ -215,7 +215,7 @@ Correction:
 
 ........................................................................
 
-### Question 5: Flowcharts And Code [6]
+### Question 5: Team Qualification Algorithm [6]
 
 A sports organiser writes a simple program, using a flowchart, to decide whether a team qualifies for the final round of a competition.
 
@@ -254,7 +254,7 @@ Answer:
 
 ```
 
-### Question 6: Flowcharts And Iteration [6]
+### Question 6: Countdown Algorithm [6]
 
 A teacher writes a simple program, using a flowchart, to count down from a starting number.
 
@@ -349,7 +349,7 @@ Answer:
 - (ii) `2`
 - (iii) `20`
 - (iv) `7`
-- (v) `gramm`
+- (v) `gram`
 - (vi) `gir`
 - (vii) `11`
 - (viii) `4.0`
@@ -455,7 +455,7 @@ The JSON import cannot be limited to basic MCQ and free-response. This paper nee
 
 ### Needed marking features
 
-- Exact answer matching for outputs like `False`, `True`, `8`, `gramm`, and `nna`.
+- Exact answer matching for outputs like `False`, `True`, `8`, `gram`, and `nna`.
 - Case-sensitive or case-insensitive matching per answer.
 - Accepted alternatives for short answers, such as `selection`, `if-else`, `iteration`, `repetition`, and `loop`.
 - Rubric-point marking for explanation/code-writing questions.
@@ -517,7 +517,7 @@ Example:
   "id": "q3b-v-string-slice",
   "outcomeId": "python-string-slicing",
   "variantGroupId": "q3b-v",
-  "targetAnswerId": "answer-gramm",
+  "targetAnswerId": "answer-gram",
   "type": "code_output",
   "marks": 1
 }

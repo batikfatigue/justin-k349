@@ -25,6 +25,8 @@ Generate a tutor password hash locally with:
 node -e "const bcrypt=require('bcryptjs'); bcrypt.hash(process.argv[1], 12).then(console.log)" "your-password"
 ```
 
+When pasting a bcrypt hash into a local `.env` file, escape each `$` as `\$` so Next.js dotenv expansion preserves the hash.
+
 ## Database Setup
 
 1. Create a Supabase project.
@@ -75,6 +77,7 @@ Each answerable part includes `id`, `label`, `type`, `prompt`, `marks`, and `mar
 Supported part types:
 
 - `single_choice`
+- `multiple_choice`
 - `short_text`
 - `structured_response`
 - `code_output_table`

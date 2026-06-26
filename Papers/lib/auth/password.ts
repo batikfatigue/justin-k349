@@ -1,14 +1,22 @@
 import "server-only";
 
 import bcrypt from "bcryptjs";
-import { requireEnv } from "@/lib/env";
+import { getEnv } from "@/lib/env";
+
+export type TutorPasswordCheck =
+  | { ok: true }
+  | { ok: false; reason: "invalid" | "misconfigured" };
 
 export async function verifyTutorPassword(password: string) {
-  const configuredHash = requireEnv("TUTOR_PASSWORD_HASH");
+  const configuredHash = getEnv().TUTOR_PASSWORD_HASH;
 
-  if (!configuredHash.startsWith("$2")) {
-    throw new Error("TUTOR_PASSWORD_HASH must be a bcrypt hash.");
+  if (!configuredHash || !configuredHash.startsWith("$2")) {
+    return { ok: false, reason: "misconfigured" } satisfies TutorPasswordCheck;
   }
 
-  return bcrypt.compare(password, configuredHash);
+  const matched = await bcrypt.compare(password, configuredHash);
+
+  return matched
+    ? ({ ok: true } satisfies TutorPasswordCheck)
+    : ({ ok: false, reason: "invalid" } satisfies TutorPasswordCheck);
 }

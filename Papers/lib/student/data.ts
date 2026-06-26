@@ -12,7 +12,7 @@ import {
   questionParts,
   questions
 } from "@/lib/db/schema";
-import type { ResponseSchema, StudentAnswer } from "@/lib/domain";
+import type { MarkingSchema, ResponseSchema, Stimulus, StudentAnswer } from "@/lib/domain";
 import { markPartAnswer } from "@/lib/marking/mark";
 import { hashAccessCode } from "@/lib/security";
 import type { StudentSession } from "@/lib/auth/session";
@@ -163,6 +163,16 @@ export async function getStudentQuestion(attemptId: string, questionNumber: numb
     .from(partAnswers)
     .where(eq(partAnswers.attemptId, attempt.id));
   const answerByPartId = new Map(savedAnswers.map((answer) => [answer.questionPartId, answer]));
+  const normalizedStimuli = moveQuestionCodeStimuliToTargetPart({
+    questionNumber: question.number,
+    questionStimulus: question.stimulus,
+    parts: parts.map((part) => ({
+      id: part.id,
+      label: part.label,
+      prompt: part.prompt,
+      stimulus: part.stimulus
+    }))
+  });
 
   return {
     attempt,
@@ -170,22 +180,31 @@ export async function getStudentQuestion(attemptId: string, questionNumber: numb
     question: {
       id: question.id,
       number: question.number,
-      title: question.title,
+      title: displayQuestionTitle(question.title),
       marks: question.marks,
-      stimulus: question.stimulus,
+      stimulus: normalizedStimuli.questionStimulus,
       position: question.position
     },
-    parts: parts.map((part) => ({
-      id: part.id,
-      label: part.label,
-      type: part.type,
-      prompt: part.prompt,
-      marks: part.marks,
-      stimulus: part.stimulus,
-      responseSchema: part.responseSchema,
-      studentFeedbackPolicy: part.studentFeedbackPolicy,
-      answer: answerByPartId.get(part.id)?.answer ?? defaultAnswer(part.responseSchema)
-    })),
+    parts: parts.map((part) => {
+      const partStimulus = normalizedStimuli.partStimulusById.get(part.id) ?? part.stimulus;
+      const normalizedPart = normalizeChoicePart({
+        prompt: part.prompt,
+        stimulus: partStimulus,
+        responseSchema: part.responseSchema
+      });
+
+      return {
+        id: part.id,
+        label: part.label,
+        type: part.type,
+        prompt: part.prompt,
+        marks: part.marks,
+        stimulus: normalizedPart.stimulus,
+        responseSchema: normalizedPart.responseSchema,
+        studentFeedbackPolicy: part.studentFeedbackPolicy,
+        answer: answerByPartId.get(part.id)?.answer ?? defaultAnswer(normalizedPart.responseSchema)
+      };
+    }),
     questionNumber,
     questionCount: allQuestions.length
   };
@@ -312,7 +331,10 @@ export async function submitStudentAttempt(
         prompt: part.prompt,
         marks: part.marks,
         stimulus: [...(question.stimulus ?? []), ...(part.stimulus ?? [])],
-        markingSchema: part.markingSchema
+        markingSchema: normalizePartMarkingSchema({
+          label: part.label,
+          markingSchema: part.markingSchema
+        })
       },
       answer
     );
@@ -417,6 +439,12 @@ export async function getStudentResults(attemptId: string, session: StudentSessi
 }
 
 function parseAnswer(formData: FormData, partId: string, responseSchema: ResponseSchema | null) {
+  if (responseSchema?.kind === "multiple_choice") {
+    return {
+      values: formData.getAll(`part-${partId}`).map(String)
+    };
+  }
+
   if (responseSchema?.kind === "code_output_table") {
     return {
       rows: Object.fromEntries(
@@ -441,6 +469,10 @@ function parseAnswer(formData: FormData, partId: string, responseSchema: Respons
 }
 
 function defaultAnswer(responseSchema: ResponseSchema | null): StudentAnswer {
+  if (responseSchema?.kind === "multiple_choice") {
+    return { values: [] };
+  }
+
   if (responseSchema?.kind === "code_output_table") {
     return {
       rows: Object.fromEntries(responseSchema.rows.map((row) => [row.id, ""]))
@@ -455,4 +487,123 @@ function defaultAnswer(responseSchema: ResponseSchema | null): StudentAnswer {
   }
 
   return { value: "" };
+}
+
+function normalizeChoicePart({
+  prompt,
+  responseSchema,
+  stimulus
+}: {
+  prompt: string;
+  responseSchema: ResponseSchema | null;
+  stimulus: Stimulus[];
+}) {
+  if (
+    responseSchema?.kind !== "structured_response" ||
+    !/tick all applicable boxes?/i.test(prompt)
+  ) {
+    return { responseSchema, stimulus };
+  }
+
+  const optionTableIndex = stimulus.findIndex(
+    (item) =>
+      item.type === "table" &&
+      item.columns.length === 1 &&
+      item.columns[0].trim().toLowerCase() === "option" &&
+      item.rows.length >= 2 &&
+      item.rows.every((row) => row.length === 1 && row[0].trim().length > 0)
+  );
+
+  if (optionTableIndex < 0) {
+    return { responseSchema, stimulus };
+  }
+
+  const optionTable = stimulus[optionTableIndex];
+
+  if (optionTable.type !== "table") {
+    return { responseSchema, stimulus };
+  }
+
+  return {
+    responseSchema: {
+      kind: "multiple_choice" as const,
+      options: optionTable.rows.map(([label]) => ({ value: label, label }))
+    },
+    stimulus: stimulus.filter((_, index) => index !== optionTableIndex)
+  };
+}
+
+function moveQuestionCodeStimuliToTargetPart({
+  parts,
+  questionNumber,
+  questionStimulus
+}: {
+  parts: Array<{ id: string; label: string; prompt: string; stimulus: Stimulus[] }>;
+  questionNumber: string;
+  questionStimulus: Stimulus[];
+}) {
+  const partStimulusById = new Map(parts.map((part) => [part.id, part.stimulus]));
+
+  if (questionNumber !== "2") {
+    return { questionStimulus, partStimulusById };
+  }
+
+  const codeStimuli = questionStimulus.filter((stimulus) => stimulus.type === "code");
+
+  if (!codeStimuli.length) {
+    return { questionStimulus, partStimulusById };
+  }
+
+  const targetPart = parts.find(
+    (part) =>
+      part.label === "2(b)" ||
+      /program.+execut/i.test(part.prompt) ||
+      /identify one bug/i.test(part.prompt)
+  );
+
+  if (!targetPart || targetPart.stimulus.some((stimulus) => stimulus.type === "code")) {
+    return { questionStimulus, partStimulusById };
+  }
+
+  partStimulusById.set(targetPart.id, [...codeStimuli, ...targetPart.stimulus]);
+
+  return {
+    questionStimulus: questionStimulus.filter((stimulus) => stimulus.type !== "code"),
+    partStimulusById
+  };
+}
+
+function displayQuestionTitle(title: string) {
+  if (title === "Flowcharts And Code") {
+    return "Team Qualification Algorithm";
+  }
+
+  if (title === "Flowcharts And Iteration") {
+    return "Countdown Algorithm";
+  }
+
+  return title;
+}
+
+function normalizePartMarkingSchema({
+  label,
+  markingSchema
+}: {
+  label: string;
+  markingSchema: MarkingSchema;
+}): MarkingSchema {
+  if (
+    label === "4(b)" &&
+    markingSchema.mode === "error_correction" &&
+    String(markingSchema.expectedLineNumber) === "04" &&
+    markingSchema.acceptedCorrectedLines.includes("    print(x)")
+  ) {
+    return {
+      ...markingSchema,
+      lineNumberMarks: 0,
+      correctionMarks: 1
+    };
+  }
+
+  return markingSchema;
 }

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AnswerControls } from "@/components/student/AnswerControls";
+import { PromptText } from "@/components/student/PromptText";
 import { StimulusRenderer } from "@/components/student/StimulusRenderer";
 import { Stopwatch } from "@/components/student/Stopwatch";
 import { requireStudentSession } from "@/lib/auth/session";
@@ -42,18 +43,24 @@ export default async function AttemptQuestionPage({
           <h2>{data.question.title}</h2>
           <StimulusRenderer stimuli={data.question.stimulus} />
         </section>
-        {data.parts.map((part) => (
-          <section className="card stack" key={part.id}>
-            <div>
-              <h3>
-                {part.label} <span className="meta">[{part.marks}]</span>
-              </h3>
-              <p className="body-copy">{part.prompt}</p>
-            </div>
-            <StimulusRenderer stimuli={part.stimulus} />
-            <AnswerControls partId={part.id} responseSchema={part.responseSchema} answer={part.answer} />
-          </section>
-        ))}
+        {data.parts.map((part) => {
+          const leadingStimuli = part.stimulus.filter((stimulus) => stimulus.type === "code");
+          const trailingStimuli = part.stimulus.filter((stimulus) => stimulus.type !== "code");
+
+          return (
+            <section className="card stack" key={part.id}>
+              <div className="stack">
+                <h3>
+                  {part.label} <span className="meta">[{part.marks}]</span>
+                </h3>
+                <StimulusRenderer stimuli={leadingStimuli} />
+                <PromptText text={part.prompt} />
+              </div>
+              <StimulusRenderer stimuli={trailingStimuli} />
+              <AnswerControls partId={part.id} responseSchema={part.responseSchema} answer={part.answer} />
+            </section>
+          );
+        })}
         <div className="toolbar">
           <button
             type="submit"
