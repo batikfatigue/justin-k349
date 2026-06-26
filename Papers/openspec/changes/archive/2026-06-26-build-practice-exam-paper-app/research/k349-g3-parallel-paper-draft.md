@@ -303,6 +303,7 @@ Answer:
 1(a): Correct boxes:
 
 - `deploy code`
+- `consolidate requirements`
 - `design solutions`
 - `test & refine code`
 

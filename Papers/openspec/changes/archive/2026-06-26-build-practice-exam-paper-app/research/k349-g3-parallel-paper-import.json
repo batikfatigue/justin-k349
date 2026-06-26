@@ -63,7 +63,7 @@
           "marking": {
             "mode": "exact",
             "acceptedAnswers": [
-              "deploy_code;design_solutions;test_refine_code"
+              "consolidate_requirements;deploy_code;design_solutions;test_refine_code"
             ],
             "caseSensitive": false
           }

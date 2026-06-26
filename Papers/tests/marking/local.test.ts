@@ -16,10 +16,10 @@ describe("local marking", () => {
 
   it("marks exact multiple-choice selections independent of checkbox order", () => {
     const result = markExact(
-      { values: ["test_refine_code", "deploy_code", "design_solutions"] },
+      { values: ["test_refine_code", "deploy_code", "design_solutions", "consolidate_requirements"] },
       {
         mode: "exact",
-        acceptedAnswers: ["deploy_code;design_solutions;test_refine_code"],
+        acceptedAnswers: ["consolidate_requirements;deploy_code;design_solutions;test_refine_code"],
         caseSensitive: false
       },
       1
@@ -27,7 +27,7 @@ describe("local marking", () => {
 
     expect(result.score).toBe(1);
     expect(result.exactMarkingDetails).toMatchObject({
-      submitted: "deploy_code;design_solutions;test_refine_code",
+      submitted: "consolidate_requirements;deploy_code;design_solutions;test_refine_code",
       matched: true
     });
   });

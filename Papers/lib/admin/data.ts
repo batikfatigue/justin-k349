@@ -108,15 +108,22 @@ export async function getAdminAttemptDetail(attemptId: string) {
         ...question,
         stimulus: normalizedStimuli.questionStimulus,
         title: displayQuestionTitle(question.title),
-        parts: questionParts.map((part) => ({
-          ...part,
-          stimulus: normalizedStimuli.partStimulusById.get(part.id) ?? part.stimulus,
-          markingSchema: normalizePartMarkingSchema({
+        parts: questionParts.map((part) => {
+          const markingSchema = normalizePartMarkingSchema({
             label: part.label,
             markingSchema: part.markingSchema
-          }),
-          answer: answersByPartId.get(part.id) ?? null
-        }))
+          });
+          const answer = answersByPartId.get(part.id) ?? null;
+
+          return {
+            ...part,
+            stimulus: normalizedStimuli.partStimulusById.get(part.id) ?? part.stimulus,
+            markingSchema,
+            answer,
+            canResubmitAiMark:
+              attempt.status === "submitted" && Boolean(answer) && markingSchema.mode === "rubric_ai"
+          };
+        })
       };
     })
   };

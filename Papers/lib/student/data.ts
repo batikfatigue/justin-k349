@@ -13,12 +13,11 @@ import {
   questions
 } from "@/lib/db/schema";
 import type { ResponseSchema, StudentAnswer } from "@/lib/domain";
-import { markPartAnswer } from "@/lib/marking/mark";
+import { markAndPersistPartAnswer } from "@/lib/marking/attempt";
 import {
   displayQuestionTitle,
   moveQuestionCodeStimuliToTargetPart,
-  normalizeChoicePart,
-  normalizePartMarkingSchema
+  normalizeChoicePart
 } from "@/lib/paper/presentation";
 import { hashAccessCode } from "@/lib/security";
 import type { StudentSession } from "@/lib/auth/session";
@@ -329,54 +328,15 @@ export async function submitStudentAttempt(
 
     const savedAnswer = answerByPartId.get(part.id);
     const answer = savedAnswer?.answer ?? defaultAnswer(part.responseSchema);
-    const result = await markPartAnswer(
-      {
-        id: part.id,
-        label: part.label,
-        type: part.type,
-        prompt: part.prompt,
-        marks: part.marks,
-        stimulus: [...(question.stimulus ?? []), ...(part.stimulus ?? [])],
-        markingSchema: normalizePartMarkingSchema({
-          label: part.label,
-          markingSchema: part.markingSchema
-        })
-      },
-      answer
-    );
 
-    await db
-      .insert(partAnswers)
-      .values({
-        attemptId,
-        questionId: question.id,
-        questionPartId: part.id,
-        answer,
-        score: result.score,
-        maxScore: result.maxScore,
-        markingStatus: result.status,
-        studentFeedback: result.studentFeedback,
-        tutorRationale: result.tutorRationale,
-        missingRubricPoints: result.missingRubricPoints ?? [],
-        exactMarkingDetails: result.exactMarkingDetails,
-        markedAt: now,
-        updatedAt: now
-      })
-      .onConflictDoUpdate({
-        target: [partAnswers.attemptId, partAnswers.questionPartId],
-        set: {
-          answer,
-          score: result.score,
-          maxScore: result.maxScore,
-          markingStatus: result.status,
-          studentFeedback: result.studentFeedback,
-          tutorRationale: result.tutorRationale,
-          missingRubricPoints: result.missingRubricPoints ?? [],
-          exactMarkingDetails: result.exactMarkingDetails,
-          markedAt: now,
-          updatedAt: now
-        }
-      });
+    await markAndPersistPartAnswer({
+      answer,
+      attemptId,
+      db,
+      now,
+      part,
+      question
+    });
   }
 
   const [submitted] = await db

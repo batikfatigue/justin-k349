@@ -35,7 +35,7 @@ describe("K349 paper import contract", () => {
 
   it("validates the parallel import JSON with checkbox responses and neutral flowchart titles", () => {
     const paperJson = readFileSync(
-      "openspec/changes/build-practice-exam-paper-app/research/k349-g3-parallel-paper-import.json",
+      "openspec/changes/archive/2026-06-26-build-practice-exam-paper-app/research/k349-g3-parallel-paper-import.json",
       "utf8"
     );
     const result = validatePaperJson(JSON.parse(paperJson));
@@ -56,7 +56,7 @@ describe("K349 paper import contract", () => {
       response: { kind: "multiple_choice" },
       marking: {
         mode: "exact",
-        acceptedAnswers: ["deploy_code;design_solutions;test_refine_code"]
+        acceptedAnswers: ["consolidate_requirements;deploy_code;design_solutions;test_refine_code"]
       }
     });
     expect(result.paper.questions[1].stimulus ?? []).toEqual([]);
