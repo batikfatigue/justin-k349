@@ -15,7 +15,7 @@ Set these in Vercel and in local `.env` files:
 | `DATABASE_URL` | Supabase transaction-pooler connection string for runtime requests. Use the pooler port and keep prepared statements disabled through the app client. |
 | `DIRECT_DATABASE_URL` | Supabase direct Postgres connection string for migrations. |
 | `GEMINI_API_KEY` | Server-only API key for rubric marking. |
-| `GEMINI_MODEL` | Gemini model name, for example `gemini-1.5-flash`. |
+| `GEMINI_MODEL` | Gemini model name, for example `gemini-3.5-flash`. |
 | `TUTOR_PASSWORD_HASH` | Bcrypt hash for the single tutor password. |
 | `SESSION_SECRET` | At least 32 random characters. Used to sign tutor sessions, student access sessions, and protected access-code hashes. |
 

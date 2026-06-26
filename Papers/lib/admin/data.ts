@@ -10,8 +10,12 @@ import {
   questionParts,
   questions
 } from "@/lib/db/schema";
-import type { MarkingSchema, Stimulus } from "@/lib/domain";
 import { displayAttemptStatus } from "@/lib/attempt-status";
+import {
+  displayQuestionTitle,
+  moveQuestionCodeStimuliToTargetPart,
+  normalizePartMarkingSchema
+} from "@/lib/paper/presentation";
 
 export async function listAdminAttempts() {
   const rows = await getDb()
@@ -116,79 +120,4 @@ export async function getAdminAttemptDetail(attemptId: string) {
       };
     })
   };
-}
-
-function moveQuestionCodeStimuliToTargetPart({
-  parts,
-  questionNumber,
-  questionStimulus
-}: {
-  parts: Array<{ id: string; label: string; prompt: string; stimulus: Stimulus[] }>;
-  questionNumber: string;
-  questionStimulus: Stimulus[];
-}) {
-  const partStimulusById = new Map(parts.map((part) => [part.id, part.stimulus]));
-
-  if (questionNumber !== "2") {
-    return { questionStimulus, partStimulusById };
-  }
-
-  const codeStimuli = questionStimulus.filter((stimulus) => stimulus.type === "code");
-
-  if (!codeStimuli.length) {
-    return { questionStimulus, partStimulusById };
-  }
-
-  const targetPart = parts.find(
-    (part) =>
-      part.label === "2(b)" ||
-      /program.+execut/i.test(part.prompt) ||
-      /identify one bug/i.test(part.prompt)
-  );
-
-  if (!targetPart || targetPart.stimulus.some((stimulus) => stimulus.type === "code")) {
-    return { questionStimulus, partStimulusById };
-  }
-
-  partStimulusById.set(targetPart.id, [...codeStimuli, ...targetPart.stimulus]);
-
-  return {
-    questionStimulus: questionStimulus.filter((stimulus) => stimulus.type !== "code"),
-    partStimulusById
-  };
-}
-
-function displayQuestionTitle(title: string) {
-  if (title === "Flowcharts And Code") {
-    return "Team Qualification Algorithm";
-  }
-
-  if (title === "Flowcharts And Iteration") {
-    return "Countdown Algorithm";
-  }
-
-  return title;
-}
-
-function normalizePartMarkingSchema({
-  label,
-  markingSchema
-}: {
-  label: string;
-  markingSchema: MarkingSchema;
-}): MarkingSchema {
-  if (
-    label === "4(b)" &&
-    markingSchema.mode === "error_correction" &&
-    String(markingSchema.expectedLineNumber) === "04" &&
-    markingSchema.acceptedCorrectedLines.includes("    print(x)")
-  ) {
-    return {
-      ...markingSchema,
-      lineNumberMarks: 0,
-      correctionMarks: 1
-    };
-  }
-
-  return markingSchema;
 }

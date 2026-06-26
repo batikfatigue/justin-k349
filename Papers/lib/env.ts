@@ -11,7 +11,7 @@ const envSchema = z.object({
   DATABASE_URL: optionalUrl,
   DIRECT_DATABASE_URL: optionalUrl,
   GEMINI_API_KEY: z.string().trim().optional().or(z.literal("").transform(() => undefined)),
-  GEMINI_MODEL: z.string().trim().default("gemini-1.5-flash"),
+  GEMINI_MODEL: z.string().trim().default("gemini-3.5-flash"),
   TUTOR_PASSWORD_HASH: z.string().trim().optional().or(z.literal("").transform(() => undefined)),
   SESSION_SECRET: z
     .string()
