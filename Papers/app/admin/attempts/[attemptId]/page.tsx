@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { AttemptDetailView } from "@/components/admin/AttemptDetailView";
-import { resubmitAiMarkAction } from "@/app/admin/attempts/[attemptId]/actions";
+import {
+  manualOverrideMarkAction,
+  resubmitAiMarkAction
+} from "@/app/admin/attempts/[attemptId]/actions";
 import { requireTutorSession } from "@/lib/auth/session";
 import { getAdminAttemptDetail } from "@/lib/admin/data";
 
@@ -9,7 +12,12 @@ export default async function AdminAttemptDetailPage({
   searchParams
 }: {
   params: { attemptId: string };
-  searchParams?: { remark?: string | string[]; reason?: string | string[] };
+  searchParams?: {
+    override?: string | string[];
+    overrideReason?: string | string[];
+    remark?: string | string[];
+    reason?: string | string[];
+  };
 }) {
   requireTutorSession();
   const detail = await getAdminAttemptDetail(params.attemptId);
@@ -21,6 +29,9 @@ export default async function AdminAttemptDetailPage({
   return (
     <AttemptDetailView
       detail={detail}
+      manualOverrideAction={manualOverrideMarkAction}
+      overrideOutcome={firstSearchValue(searchParams?.override)}
+      overrideReason={firstSearchValue(searchParams?.overrideReason)}
       remarkOutcome={firstSearchValue(searchParams?.remark)}
       remarkReason={firstSearchValue(searchParams?.reason)}
       resubmitAction={resubmitAiMarkAction}

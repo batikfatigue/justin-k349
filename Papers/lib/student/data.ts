@@ -1,8 +1,8 @@
 import "server-only";
 
-import { and, asc, eq, max } from "drizzle-orm";
+import { and, asc, eq, inArray, max, sql } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { getDb } from "@/lib/db/client";
+import { getDb, type Db } from "@/lib/db/client";
 import {
   accessCodes,
   attempts,
@@ -163,10 +163,16 @@ export async function getStudentQuestion(attemptId: string, questionNumber: numb
     .from(questionParts)
     .where(eq(questionParts.questionId, question.id))
     .orderBy(asc(questionParts.position));
-  const savedAnswers = await getDb()
-    .select()
-    .from(partAnswers)
-    .where(eq(partAnswers.attemptId, attempt.id));
+  const partIds = parts.map((part) => part.id);
+  const savedAnswers =
+    partIds.length > 0
+      ? await getDb()
+          .select()
+          .from(partAnswers)
+          .where(
+            and(eq(partAnswers.attemptId, attempt.id), inArray(partAnswers.questionPartId, partIds))
+          )
+      : [];
   const answerByPartId = new Map(savedAnswers.map((answer) => [answer.questionPartId, answer]));
   const normalizedStimuli = moveQuestionCodeStimuliToTargetPart({
     questionNumber: question.number,
@@ -221,35 +227,36 @@ export async function saveQuestionAnswers(
   formData: FormData,
   session: StudentSession
 ) {
-  const safeQuestion = await getStudentQuestion(attemptId, questionNumber, session);
   const db = getDb();
+  const safeQuestion = await getStudentQuestionForSave(attemptId, questionNumber, session, db);
   const now = new Date();
+  const answerRows = safeQuestion.parts.map((part) => ({
+    attemptId,
+    questionId: safeQuestion.question.id,
+    questionPartId: part.id,
+    answer: parseAnswer(formData, part.id, part.responseSchema),
+    maxScore: part.marks,
+    markingStatus: "pending",
+    markingSource: "auto" as const,
+    score: null,
+    studentFeedback: null,
+    tutorRationale: null,
+    missingRubricPoints: [],
+    exactMarkingDetails: null,
+    markedAt: null,
+    updatedAt: now
+  }));
 
-  for (const part of safeQuestion.parts) {
-    const answer = parseAnswer(formData, part.id, part.responseSchema);
-
+  if (answerRows.length > 0) {
     await db
       .insert(partAnswers)
-      .values({
-        attemptId,
-        questionId: safeQuestion.question.id,
-        questionPartId: part.id,
-        answer,
-        maxScore: part.marks,
-        markingStatus: "pending",
-        score: null,
-        studentFeedback: null,
-        tutorRationale: null,
-        missingRubricPoints: [],
-        exactMarkingDetails: null,
-        markedAt: null,
-        updatedAt: now
-      })
+      .values(answerRows)
       .onConflictDoUpdate({
         target: [partAnswers.attemptId, partAnswers.questionPartId],
         set: {
-          answer,
+          answer: sql`excluded.answer`,
           markingStatus: "pending",
+          markingSource: "auto",
           score: null,
           studentFeedback: null,
           tutorRationale: null,
@@ -261,7 +268,13 @@ export async function saveQuestionAnswers(
       });
   }
 
-  await updateStudentHeartbeat(attemptId, session, Number(formData.get("elapsedSeconds") ?? 0));
+  await updateStudentAttemptProgress(
+    db,
+    attemptId,
+    session,
+    Number(formData.get("elapsedSeconds") ?? 0),
+    now
+  );
 
   return safeQuestion;
 }
@@ -271,22 +284,7 @@ export async function updateStudentHeartbeat(
   session: StudentSession,
   elapsedSeconds: number
 ) {
-  const attempt = await getStudentAttempt(attemptId, session);
-
-  if (!attempt || attempt.status !== "in_progress") {
-    return null;
-  }
-
-  const [updated] = await getDb()
-    .update(attempts)
-    .set({
-      lastSeenAt: new Date(),
-      elapsedSeconds: Math.max(0, Math.floor(elapsedSeconds || 0))
-    })
-    .where(eq(attempts.id, attemptId))
-    .returning();
-
-  return updated;
+  return updateStudentAttemptProgress(getDb(), attemptId, session, elapsedSeconds, new Date());
 }
 
 export async function submitStudentAttempt(
@@ -432,6 +430,89 @@ function parseAnswer(formData: FormData, partId: string, responseSchema: Respons
   return {
     value: String(formData.get(`part-${partId}`) ?? "")
   };
+}
+
+async function getStudentQuestionForSave(
+  attemptId: string,
+  questionNumber: number,
+  session: StudentSession,
+  db: Db
+) {
+  if (!Number.isInteger(questionNumber) || questionNumber < 1) {
+    notFound();
+  }
+
+  const [attempt] = await db
+    .select()
+    .from(attempts)
+    .where(
+      and(
+        eq(attempts.id, attemptId),
+        eq(attempts.accessCodeId, session.accessCodeId),
+        eq(attempts.normalizedStudentName, session.normalizedStudentName),
+        eq(attempts.status, "in_progress")
+      )
+    );
+
+  if (!attempt) {
+    notFound();
+  }
+
+  const [question] = await db
+    .select()
+    .from(questions)
+    .where(eq(questions.paperVersionId, attempt.paperVersionId))
+    .orderBy(asc(questions.position))
+    .limit(1)
+    .offset(questionNumber - 1);
+
+  if (!question) {
+    notFound();
+  }
+
+  const parts = await db
+    .select()
+    .from(questionParts)
+    .where(
+      and(
+        eq(questionParts.paperVersionId, attempt.paperVersionId),
+        eq(questionParts.questionId, question.id)
+      )
+    )
+    .orderBy(asc(questionParts.position));
+
+  return {
+    attempt,
+    question,
+    parts,
+    questionNumber
+  };
+}
+
+async function updateStudentAttemptProgress(
+  db: Db,
+  attemptId: string,
+  session: StudentSession,
+  elapsedSeconds: number,
+  now: Date
+) {
+  const [updated] = await db
+    .update(attempts)
+    .set({
+      lastSeenAt: now,
+      elapsedSeconds: Math.max(0, Math.floor(elapsedSeconds || 0))
+    })
+    .where(
+      and(
+        eq(attempts.id, attemptId),
+        eq(attempts.accessCodeId, session.accessCodeId),
+        eq(attempts.normalizedStudentName, session.normalizedStudentName),
+        eq(attempts.status, "in_progress")
+      )
+    )
+    .returning();
+
+  return updated ?? null;
 }
 
 function defaultAnswer(responseSchema: ResponseSchema | null): StudentAnswer {

@@ -13,6 +13,7 @@ import {
 import type {
   ImportedPaper,
   MarkingSchema,
+  MarkingSource,
   ResponseSchema,
   Stimulus,
   StudentAnswer
@@ -205,6 +206,7 @@ export const partAnswers = pgTable(
     score: integer("score"),
     maxScore: integer("max_score").notNull(),
     markingStatus: text("marking_status").notNull().default("pending"),
+    markingSource: text("marking_source").$type<MarkingSource>().notNull().default("auto"),
     studentFeedback: text("student_feedback"),
     tutorRationale: text("tutor_rationale"),
     missingRubricPoints: jsonb("missing_rubric_points").$type<string[]>().notNull().default([]),

@@ -1,0 +1,590 @@
+# K349 G3 Computing Parallel Practice Paper
+# Human-readable YAML version of k349-g3-parallel-paper-import.json.
+# The current app imports JSON only; keep this file as the editable source/template,
+# then convert it back to the same v1 import shape before using /admin/import.
+schemaVersion: "1.0"
+paperId: k349-g3-parallel-practice-paper
+title: K349 G3 Computing Parallel Practice Paper
+syllabus: K349 G3 Computing
+mode: practice
+status: published
+totalMarks: 38
+accessCodes:
+  - code: G3K349
+    label: "G3 Computing"
+questions:
+  - id: q1
+    number: "1"
+    title: Iterative Software Development
+    marks: 6
+    outcomeId: software-development
+    variantGroupId: iterative-sprint-cycle
+    targetAnswerId: agile-sprint-flexibility
+    difficulty: standard
+    stimulus:
+      - type: text
+        text: |-
+            The stages in software development may be carried out in a linear way or repeated in cycles. One example of an iterative approach is agile development.
+    parts:
+      - id: q1a
+        label: "1(a)"
+        type: multiple_choice
+        prompt: |-
+            Tick all applicable boxes to identify the stages included in the simplified sprint cycle taught for this paper.
+        marks: 1
+        response:
+          kind: multiple_choice
+          options:
+            - value: deploy_code
+              label: "deploy code"
+            - value: feedback_review
+              label: "feedback and review"
+            - value: design_solutions
+              label: "design solutions"
+            - value: test_refine_code
+              label: "test & refine code"
+            - value: consolidate_requirements
+              label: "consolidate requirements"
+        marking:
+          mode: exact
+          acceptedAnswers:
+            - consolidate_requirements;deploy_code;design_solutions;test_refine_code
+          caseSensitive: false
+      - id: q1b
+        label: "1(b)"
+        type: structured_response
+        prompt: |-
+            A school is developing a new online homework system for students. The first version only needs students to log in, view homework, and submit answers. However, after teachers try the first version, they request extra features such as automatic marking, late-submission warnings, and progress reports.
+            
+            The development team decides to use agile sprint cycles instead of completing the whole system in one long project.
+            
+            Explain how using sprint cycles helps the software engineers stay flexible when developing this homework system, especially when teachers request changes during the project.
+        marks: 4
+        response:
+          kind: structured_response
+          lines: 6
+        marking:
+          mode: rubric_ai
+          maxScore: 4
+          modelAnswer: |-
+              Sprint cycles break the project into smaller parts. Each sprint focuses on selected requirements or features, and a working version can be shown to users at the end of a sprint. Feedback and changed requirements can then be added, removed, or reprioritised before the next sprint. Repeated testing and refinement help the team find problems earlier and adapt without restarting the whole project.
+          rubricPoints:
+            - text: |-
+                  Explains that the project is broken into smaller parts so the team does not need to build the whole system at once.
+              marks: 1
+            - text: Explains that each sprint focuses on selected requirements or features.
+              marks: 1
+            - text: Explains that feedback or changed requirements can be handled or reprioritised before a later sprint.
+              marks: 1
+            - text: Explains that repeated testing and refinement help find problems earlier or make adaptation easier.
+              marks: 1
+      - id: q1c
+        label: "1(c)"
+        type: short_text
+        prompt: State one other iterative software development methodology.
+        marks: 1
+        response:
+          kind: short_text
+          lines: 1
+        marking:
+          mode: exact
+          acceptedAnswers:
+            - test-driven development
+            - test driven development
+            - TDD
+            - scrum
+            - extreme programming
+            - XP
+            - spiral model
+          caseSensitive: false
+  - id: q2
+    number: "2"
+    title: Python Variables And Algorithms
+    marks: 8
+    outcomeId: python-variables-and-algorithms
+    variantGroupId: python-variable-names-random-code
+    difficulty: standard
+    parts:
+      - id: q2a
+        label: "2(a)"
+        type: structured_response
+        prompt: Identify two invalid Python variable names and explain why each is invalid.
+        marks: 2
+        stimulus:
+          - type: table
+            columns:
+              - Suggested variable name
+            rows:
+              - - team_score
+              - - Movie12
+              - - total.marks
+              - - breakfast
+              - - 2026grade
+        response:
+          kind: structured_response
+          lines: 4
+        marking:
+          mode: rubric_ai
+          maxScore: 2
+          modelAnswer: |-
+              total.marks is invalid because it contains a full stop, and Python variable names can only contain letters, numbers, and underscores. 2026grade is invalid because Python variable names cannot start with a digit.
+          rubricPoints:
+            - text: Identifies total.marks and explains that a full stop is not allowed in a Python variable name.
+              marks: 1
+            - text: Identifies 2026grade and explains that a Python variable name cannot start with a digit.
+              marks: 1
+      - id: q2b
+        label: "2(b)"
+        type: structured_response
+        prompt: |-
+            A school event organiser writes a program to generate a random 5-letter prize code. Each prize code should contain 5 unique uppercase letters.
+            
+            Describe in detail how this program is executed and identify one bug in the program.
+        marks: 6
+        stimulus:
+          - type: code
+            title: Prize code generator
+            language: python
+            code: |-
+                import random
+                
+                prize_code = ""
+                
+                for count in range(5):
+                    number = random.randint(65, 90)
+                    letter = chr(number)
+                
+                    if letter not in prize_code:
+                        prize_code = prize_code + letter
+                
+                print(prize_code)
+        response:
+          kind: structured_response
+          lines: 8
+        marking:
+          mode: rubric_ai
+          maxScore: 6
+          modelAnswer: |-
+              The program imports the random module and initialises prize_code as an empty string. A for loop repeats five times. Each iteration generates a random integer from 65 to 90, converts it to an uppercase letter using chr(), checks whether that letter is not already in prize_code, and appends the letter if it is unique. The program then prints prize_code. The bug is that if a duplicate letter is generated, it is skipped, but the loop still continues, so the final prize code may contain fewer than five letters.
+          rubricPoints:
+            - text: Explains that the random module is imported and prize_code is initialised as an empty string.
+              marks: 1
+            - text: Explains that the for loop repeats the process five times.
+              marks: 1
+            - text: Explains that a random integer from 65 to 90 is generated and converted to a character with chr().
+              marks: 1
+            - text: Explains that the generated letter is checked against the current prize_code for uniqueness.
+              marks: 1
+            - text: Explains that a unique letter is appended to prize_code and that prize_code is printed.
+              marks: 1
+            - text: Identifies that duplicate letters are skipped, so the final prize code may have fewer than five letters.
+              marks: 1
+  - id: q3
+    number: "3"
+    title: Python Output
+    marks: 10
+    outcomeId: python-output-tracing
+    variantGroupId: python-expression-output
+    difficulty: standard
+    parts:
+      - id: q3a
+        label: "3(a)"
+        type: code_output_table
+        prompt: State the Boolean output for each program. Each program is independent.
+        marks: 2
+        stimulus:
+          - type: table
+            columns:
+              - Part
+              - Program
+            rows:
+              - - (i)
+                - |-
+                    s1 = "computing "
+                    s2 = "G3Computing"
+                    print(s1 in s2)
+              - - (ii)
+                - |-
+                    id_code = "123456"
+                    is_valid = len(id_code) == 7 or id_code.isdigit()
+                    print(is_valid)
+        response:
+          kind: code_output_table
+          rows:
+            - id: i
+              label: "(i)"
+            - id: ii
+              label: "(ii)"
+        marking:
+          mode: code_output_table
+          rows:
+            - id: i
+              expectedOutput: "False"
+              marks: 1
+            - id: ii
+              expectedOutput: "True"
+              marks: 1
+          caseSensitive: true
+      - id: q3b
+        label: "3(b)"
+        type: code_output_table
+        prompt: State the expected output for each program. Each program is independent.
+        marks: 8
+        stimulus:
+          - type: table
+            columns:
+              - Part
+              - Program
+            rows:
+              - - (i)
+                - |-
+                    x = 5
+                    x = x + 3
+                    print(x)
+              - - (ii)
+                - |-
+                    x = -26 // 5 % 4
+                    print(x)
+              - - (iii)
+                - |-
+                    num_str = "10"
+                    result = int(num_str) * 2
+                    print(result)
+              - - (iv)
+                - |-
+                    num = 10
+                    num = 5
+                    num += 2
+                    print(num)
+              - - (v)
+                - |-
+                    text = "Programming"
+                    print(text[3:7])
+              - - (vi)
+                - |-
+                    word = "Learning"
+                    print(word[7:1:-2])
+              - - (vii)
+                - |-
+                    text = "A B C 1 2 3"
+                    print(len(text))
+              - - (viii)
+                - |-
+                    result = pow(2.0, 2)
+                    print(result)
+        response:
+          kind: code_output_table
+          rows:
+            - id: i
+              label: "(i)"
+            - id: ii
+              label: "(ii)"
+            - id: iii
+              label: "(iii)"
+            - id: iv
+              label: "(iv)"
+            - id: v
+              label: "(v)"
+            - id: vi
+              label: "(vi)"
+            - id: vii
+              label: "(vii)"
+            - id: viii
+              label: "(viii)"
+        marking:
+          mode: code_output_table
+          rows:
+            - id: i
+              expectedOutput: "8"
+              marks: 1
+            - id: ii
+              expectedOutput: "2"
+              marks: 1
+            - id: iii
+              expectedOutput: "20"
+              marks: 1
+            - id: iv
+              expectedOutput: "7"
+              marks: 1
+            - id: v
+              expectedOutput: gram
+              marks: 1
+            - id: vi
+              expectedOutput: gir
+              marks: 1
+            - id: vii
+              expectedOutput: "11"
+              marks: 1
+            - id: viii
+              expectedOutput: "4.0"
+              marks: 1
+          caseSensitive: true
+  - id: q4
+    number: "4"
+    title: Correcting Program Errors
+    marks: 2
+    outcomeId: python-error-correction
+    variantGroupId: python-syntax-and-indentation-errors
+    difficulty: standard
+    parts:
+      - id: q4a
+        label: "4(a)"
+        type: error_correction
+        prompt: Identify the line number of the error and write the corrected line.
+        marks: 1
+        stimulus:
+          - type: code
+            language: python
+            code: |-
+                01 message = 'You're leaving already?
+                02 print(message)
+          - type: expected_output
+            title: Expected output
+            output: You're leaving already?
+        response:
+          kind: error_correction
+          showLineNumber: true
+          showCorrectedLine: true
+        marking:
+          mode: error_correction
+          expectedLineNumber: "01"
+          acceptedCorrectedLines:
+            - message = "You're leaving already?"
+            - message = 'You\'re leaving already?'
+          lineNumberMarks: 1
+          correctionMarks: 0
+          caseSensitive: true
+      - id: q4b
+        label: "4(b)"
+        type: error_correction
+        prompt: Identify the line number of the error and write the corrected line.
+        marks: 1
+        stimulus:
+          - type: code
+            language: python
+            code: |-
+                01 x = 1
+                02 while x <= 4:
+                03     x = x + 1
+                04 print(x)
+                05 print(x)
+          - type: expected_output
+            title: Expected output
+            output: |-
+                2
+                3
+                4
+                5
+                5
+        response:
+          kind: error_correction
+          showLineNumber: true
+          showCorrectedLine: true
+        marking:
+          mode: error_correction
+          expectedLineNumber: "04"
+          acceptedCorrectedLines:
+            - "    print(x)"
+          lineNumberMarks: 0
+          correctionMarks: 1
+          caseSensitive: true
+  - id: q5
+    number: "5"
+    title: Team Qualification Algorithm
+    marks: 6
+    outcomeId: flowchart-selection-python
+    variantGroupId: selection-flowchart-code
+    difficulty: standard
+    stimulus:
+      - type: text
+        text: |-
+            A sports organiser writes a simple program, using a flowchart, to decide whether a team qualifies for the final round of a competition.
+      - type: flowchart
+        title: Team qualification flowchart
+        nodes:
+          - id: start
+            kind: terminal
+            text: START
+          - id: input_rank
+            kind: input
+            text: INPUT final rank (rank)
+          - id: decision_rank
+            kind: decision
+            text: rank less than or equal to 3?
+          - id: promoted_output
+            kind: output
+            text: OUTPUT "Promoted to the finals."
+          - id: not_promoted_output
+            kind: output
+            text: OUTPUT "Not promoted."
+          - id: end_output
+            kind: output
+            text: OUTPUT "End"
+          - id: stop
+            kind: terminal
+            text: STOP
+        edges:
+          - from: start
+            to: input_rank
+          - from: input_rank
+            to: decision_rank
+          - from: decision_rank
+            to: promoted_output
+            label: "yes"
+          - from: decision_rank
+            to: not_promoted_output
+            label: "no"
+          - from: promoted_output
+            to: end_output
+          - from: not_promoted_output
+            to: end_output
+          - from: end_output
+            to: stop
+    parts:
+      - id: q5a
+        label: "5(a)"
+        type: flowchart_interpretation
+        prompt: State the programming construct shown by the decision in the flowchart.
+        marks: 1
+        response:
+          kind: flowchart_interpretation
+          lines: 1
+        marking:
+          mode: exact
+          acceptedAnswers:
+            - selection
+            - if-else
+            - if else
+            - conditional
+          caseSensitive: false
+      - id: q5b
+        label: "5(b)"
+        type: code_writing
+        prompt: Write Python program code based on the flowchart.
+        marks: 5
+        response:
+          kind: code_writing
+          language: python
+          lines: 8
+        marking:
+          mode: rubric_ai
+          maxScore: 5
+          modelAnswer: |-
+              rank = int(input("Final rank: "))
+              
+              if rank <= 3:
+                  print("Promoted to the finals.")
+              else:
+                  print("Not promoted.")
+              
+              print("End")
+          rubricPoints:
+            - text: Gets integer input for final rank or position.
+              marks: 1
+            - text: Uses if rank <= 3 or an equivalent selection condition.
+              marks: 1
+            - text: Prints Promoted to the finals. in the true branch.
+              marks: 1
+            - text: Prints Not promoted. in the false branch.
+              marks: 1
+            - text: Prints End after the selection.
+              marks: 1
+  - id: q6
+    number: "6"
+    title: Countdown Algorithm
+    marks: 6
+    outcomeId: flowchart-iteration-python
+    variantGroupId: iteration-flowchart-code
+    difficulty: standard
+    stimulus:
+      - type: text
+        text: A teacher writes a simple program, using a flowchart, to count down from a starting number.
+      - type: flowchart
+        title: Countdown flowchart
+        nodes:
+          - id: start
+            kind: terminal
+            text: START
+          - id: input_count
+            kind: input
+            text: INPUT starting number (count)
+          - id: decision_count
+            kind: decision
+            text: count greater than 0?
+          - id: output_count
+            kind: output
+            text: OUTPUT count
+          - id: decrement_count
+            kind: process
+            text: count = count - 1
+          - id: output_done
+            kind: output
+            text: OUTPUT "Done"
+          - id: stop
+            kind: terminal
+            text: STOP
+        edges:
+          - from: start
+            to: input_count
+          - from: input_count
+            to: decision_count
+          - from: decision_count
+            to: output_count
+            label: "yes"
+          - from: output_count
+            to: decrement_count
+          - from: decrement_count
+            to: decision_count
+          - from: decision_count
+            to: output_done
+            label: "no"
+          - from: output_done
+            to: stop
+    parts:
+      - id: q6a
+        label: "6(a)"
+        type: flowchart_interpretation
+        prompt: State the programming construct shown by the repeated flow in the flowchart.
+        marks: 1
+        response:
+          kind: flowchart_interpretation
+          lines: 1
+        marking:
+          mode: exact
+          acceptedAnswers:
+            - iteration
+            - repetition
+            - loop
+            - looping
+          caseSensitive: false
+      - id: q6b
+        label: "6(b)"
+        type: code_writing
+        prompt: Write Python program code based on the flowchart.
+        marks: 5
+        response:
+          kind: code_writing
+          language: python
+          lines: 8
+        marking:
+          mode: rubric_ai
+          maxScore: 5
+          modelAnswer: |-
+              count = int(input("Starting number: "))
+              
+              while count > 0:
+                  print(count)
+                  count = count - 1
+              
+              print("Done")
+          rubricPoints:
+            - text: Gets integer input for the starting number or count.
+              marks: 1
+            - text: Uses a loop with the condition count > 0 or an equivalent condition.
+              marks: 1
+            - text: Prints count inside the loop.
+              marks: 1
+            - text: Decreases count by 1 inside the loop.
+              marks: 1
+            - text: Prints Done after the loop ends.
+              marks: 1

@@ -2,7 +2,7 @@ import "server-only";
 
 import { getDb, type Db } from "@/lib/db/client";
 import { partAnswers, questionParts, questions } from "@/lib/db/schema";
-import type { MarkingResult, StudentAnswer } from "@/lib/domain";
+import type { MarkingResult, MarkingSource, StudentAnswer } from "@/lib/domain";
 import { type GeminiGenerate } from "@/lib/marking/gemini";
 import { markPartAnswer, type MarkablePart } from "@/lib/marking/mark";
 import { normalizePartMarkingSchema } from "@/lib/paper/presentation";
@@ -15,6 +15,7 @@ export type PartAnswerMarkFields = {
   score: number;
   maxScore: number;
   markingStatus: MarkingResult["status"];
+  markingSource: MarkingSource;
   studentFeedback: string;
   tutorRationale: string | null;
   missingRubricPoints: string[];
@@ -52,6 +53,7 @@ export function buildPartAnswerMarkFields({
     score: result.score,
     maxScore: result.maxScore,
     markingStatus: result.status,
+    markingSource: "auto",
     studentFeedback: result.studentFeedback,
     tutorRationale: result.tutorRationale ?? null,
     missingRubricPoints: result.missingRubricPoints ?? [],

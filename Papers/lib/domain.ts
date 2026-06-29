@@ -10,11 +10,13 @@ export const partTypes = [
 ] as const;
 
 export const markingModes = ["exact", "code_output_table", "error_correction", "rubric_ai"] as const;
+export const markingSources = ["auto", "manual"] as const;
 
 export const stimulusTypes = ["text", "code", "table", "expected_output", "flowchart"] as const;
 
 export type PartType = (typeof partTypes)[number];
 export type MarkingMode = (typeof markingModes)[number];
+export type MarkingSource = (typeof markingSources)[number];
 export type StimulusType = (typeof stimulusTypes)[number];
 
 export type TextStimulus = {

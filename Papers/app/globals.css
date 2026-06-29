@@ -138,6 +138,10 @@ h3 {
   gap: var(--space-4);
 }
 
+.grid > * {
+  min-width: 0;
+}
+
 .grid.two {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -147,6 +151,7 @@ h3 {
   border-radius: var(--radius);
   padding: var(--space-4);
   background: var(--background);
+  min-width: 0;
 }
 
 .list {
@@ -177,6 +182,12 @@ button {
 button.secondary {
   background: var(--background);
   color: var(--foreground);
+}
+
+.button:disabled,
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 .button:focus-visible,
@@ -252,6 +263,84 @@ th {
   font-size: 0.8125rem;
   color: var(--muted);
   white-space: nowrap;
+}
+
+.review-panel,
+.manual-override {
+  min-width: 0;
+}
+
+.manual-override {
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-4);
+}
+
+.review-text,
+.review-list,
+.review-details {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.review-text {
+  white-space: pre-wrap;
+  line-height: 1.65;
+}
+
+.review-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.review-details {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.review-details > div {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.review-details dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.review-details dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.review-list li {
+  min-width: 0;
+}
+
+.review-table {
+  table-layout: fixed;
+}
+
+.review-table th,
+.review-table td {
+  overflow-wrap: anywhere;
+}
+
+.review-code {
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.review-code code {
+  white-space: inherit;
 }
 
 .stimulus {

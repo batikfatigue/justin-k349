@@ -12,7 +12,13 @@ vi.mock("@/app/admin/login/actions", () => ({
 
 describe("AttemptDetailView", () => {
   it("shows the AI remark control and marked timestamp for eligible submitted AI answers", () => {
-    render(<AttemptDetailView detail={makeDetail()} resubmitAction={"/remark" as any} />);
+    render(
+      <AttemptDetailView
+        detail={makeDetail()}
+        manualOverrideAction={"/override" as any}
+        resubmitAction={"/remark" as any}
+      />
+    );
 
     expect(screen.getAllByRole("button", { name: "Resubmit AI marking" })).toHaveLength(1);
     expect(screen.getAllByText(/^Marked /).length).toBeGreaterThan(0);
@@ -23,13 +29,77 @@ describe("AttemptDetailView", () => {
       aiCanResubmit: false
     });
 
-    render(<AttemptDetailView detail={detail} resubmitAction={"/remark" as any} />);
+    render(
+      <AttemptDetailView
+        detail={detail}
+        manualOverrideAction={"/override" as any}
+        resubmitAction={"/remark" as any}
+      />
+    );
 
     expect(screen.queryByRole("button", { name: "Resubmit AI marking" })).not.toBeInTheDocument();
   });
+
+  it("renders readable review content without generic JSON blocks", () => {
+    const { container } = render(
+      <AttemptDetailView
+        detail={makeDetail()}
+        manualOverrideAction={"/override" as any}
+        resubmitAction={"/remark" as any}
+      />
+    );
+
+    expect(screen.getByText("The team can adjust in the next sprint.")).toBeInTheDocument();
+    expect(screen.getByText("Model answer")).toBeInTheDocument();
+    expect(screen.getByText("Short iterations allow changes to be handled in later sprints.")).toBeInTheDocument();
+    expect(screen.getByText("Needs a specific sprint example.")).toBeInTheDocument();
+    expect(screen.getAllByText("Accepted answers").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Matched").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/"mode"/)).not.toBeInTheDocument();
+    expect(container.querySelector(".code-block")).not.toBeInTheDocument();
+  });
+
+  it("shows manual override controls and mark source for submitted saved answers", () => {
+    render(
+      <AttemptDetailView
+        detail={makeDetail()}
+        manualOverrideAction={"/override" as any}
+        resubmitAction={"/remark" as any}
+      />
+    );
+
+    expect(screen.getAllByRole("button", { name: "Save manual mark" })).toHaveLength(2);
+    expect(screen.getByLabelText("Score for 1(b)")).toHaveValue(1);
+    expect(screen.getByLabelText("Student feedback for 1(b)")).toHaveValue("Good explanation.");
+    expect(screen.getAllByText("Source: Auto")).toHaveLength(1);
+    expect(screen.getAllByText("Source: Manual")).toHaveLength(1);
+  });
+
+  it("hides manual override controls before submission", () => {
+    const detail = makeDetail({
+      aiCanResubmit: false,
+      status: "in_progress"
+    });
+
+    render(
+      <AttemptDetailView
+        detail={detail}
+        manualOverrideAction={"/override" as any}
+        resubmitAction={"/remark" as any}
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: "Save manual mark" })).not.toBeInTheDocument();
+  });
 });
 
-function makeDetail({ aiCanResubmit = true }: { aiCanResubmit?: boolean } = {}) {
+function makeDetail({
+  aiCanResubmit = true,
+  status = "submitted"
+}: {
+  aiCanResubmit?: boolean;
+  status?: "in_progress" | "submitted";
+} = {}) {
   const markedAt = new Date("2026-06-26T04:00:00.000Z");
 
   return {
@@ -43,10 +113,10 @@ function makeDetail({ aiCanResubmit = true }: { aiCanResubmit?: boolean } = {}) 
       studentName: "Ada Lovelace",
       normalizedStudentName: "ada lovelace",
       attemptNumber: 1,
-      status: "submitted",
-      displayStatus: "submitted",
+      status,
+      displayStatus: status,
       startedAt: new Date("2026-06-26T03:00:00.000Z"),
-      submittedAt: markedAt,
+      submittedAt: status === "submitted" ? markedAt : null,
       lastSeenAt: markedAt,
       elapsedSeconds: 120
     },
@@ -96,12 +166,13 @@ function makeDetail({ aiCanResubmit = true }: { aiCanResubmit?: boolean } = {}) 
               questionId: "question-1",
               questionPartId: "part-ai",
               answer: { value: "The team can adjust in the next sprint." },
-              score: 2,
+              score: 1,
               maxScore: 2,
               markingStatus: "marked",
+              markingSource: "auto",
               studentFeedback: "Good explanation.",
               tutorRationale: "Covers repeated stages and change handling.",
-              missingRubricPoints: [],
+              missingRubricPoints: ["Needs a specific sprint example."],
               exactMarkingDetails: null,
               markedAt,
               updatedAt: markedAt
@@ -139,10 +210,16 @@ function makeDetail({ aiCanResubmit = true }: { aiCanResubmit?: boolean } = {}) 
               score: 1,
               maxScore: 1,
               markingStatus: "marked",
+              markingSource: "manual",
               studentFeedback: "Your response matched the expected answer.",
               tutorRationale: "Exact marker matched one accepted answer.",
               missingRubricPoints: [],
-              exactMarkingDetails: null,
+              exactMarkingDetails: {
+                submitted: "scrum",
+                acceptedAnswers: ["scrum"],
+                caseSensitive: false,
+                matched: true
+              },
               markedAt,
               updatedAt: markedAt
             }

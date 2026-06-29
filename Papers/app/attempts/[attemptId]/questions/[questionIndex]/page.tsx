@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { AnswerControls } from "@/components/student/AnswerControls";
 import { PromptText } from "@/components/student/PromptText";
+import { QuestionNavigationControls } from "@/components/student/QuestionNavigationControls";
 import { StimulusRenderer } from "@/components/student/StimulusRenderer";
 import { Stopwatch } from "@/components/student/Stopwatch";
 import { requireStudentSession } from "@/lib/auth/session";
@@ -61,26 +62,7 @@ export default async function AttemptQuestionPage({
             </section>
           );
         })}
-        <div className="toolbar">
-          <button
-            type="submit"
-            name="intent"
-            value="previous"
-            className="secondary"
-            disabled={questionNumber === 1}
-          >
-            Previous
-          </button>
-          {questionNumber < data.questionCount ? (
-            <button type="submit" name="intent" value="next">
-              Save and next
-            </button>
-          ) : (
-            <button type="submit" name="intent" value="submit">
-              Submit paper
-            </button>
-          )}
-        </div>
+        <QuestionNavigationControls questionNumber={questionNumber} questionCount={data.questionCount} />
       </form>
     </main>
   );
