@@ -359,14 +359,15 @@ Answer:
 
 4(a):
 
-- Line number: `01`
-- Correction: `message = "You're leaving already?"`
+- 1 mark: line number `01`
+- 1 mark: correction `message = "You're leaving already?"`
 - Alternative accepted: `message = 'You\\'re leaving already?'`
 
 4(b):
 
-- Line number: `04`
-- Correction: `    print(x)`
+- AI marking model answer: line number `04`; corrected line `    print(x)`.
+- 1 mark: identifies line `04`.
+- 1 mark: corrected line is indented one level so line 4 starts in the same column as line 3.
 
 ### Question 5
 

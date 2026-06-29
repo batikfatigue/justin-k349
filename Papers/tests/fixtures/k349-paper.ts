@@ -7,7 +7,7 @@ export const k349Paper: ImportedPaper = {
   syllabus: "K349 G3 Computing",
   mode: "practice",
   status: "published",
-  totalMarks: 30,
+  totalMarks: 32,
   accessCodes: [{ code: "G3K349", label: "G3 Computing" }],
   questions: [
     {
@@ -211,14 +211,14 @@ export const k349Paper: ImportedPaper = {
       id: "q4",
       number: "4",
       title: "Correcting Program Errors",
-      marks: 2,
+      marks: 4,
       parts: [
         {
           id: "q4a",
           label: "4(a)",
           type: "error_correction",
           prompt: "Identify the line number and write the corrected line.",
-          marks: 1,
+          marks: 2,
           stimulus: [
             { type: "code", language: "python", code: "01 message = 'It's time to go!'\n02 print(message)" },
             { type: "expected_output", output: "It's time to go!" }
@@ -229,7 +229,7 @@ export const k349Paper: ImportedPaper = {
             expectedLineNumber: "01",
             acceptedCorrectedLines: ["message = \"It's time to go!\"", "message = 'It\\'s time to go!'"],
             lineNumberMarks: 1,
-            correctionMarks: 0
+            correctionMarks: 1
           }
         },
         {
@@ -237,18 +237,29 @@ export const k349Paper: ImportedPaper = {
           label: "4(b)",
           type: "error_correction",
           prompt: "Identify the line number and write the corrected line.",
-          marks: 1,
+          marks: 2,
           stimulus: [
-            { type: "code", language: "python", code: "01 x = 1\n02 while x <= 4:\n03     x = x + 1\n04 print(x)" },
-            { type: "expected_output", output: "2\n3\n4\n5" }
+            { type: "code", language: "python", code: "01 x = 1\n02 while x <= 4:\n03     x = x + 1\n04 print(x)\n05 print(x)" },
+            { type: "expected_output", output: "2\n3\n4\n5\n5" }
           ],
           response: { kind: "error_correction" },
           marking: {
-            mode: "error_correction",
-            expectedLineNumber: "04",
-            acceptedCorrectedLines: ["    print(x)"],
-            lineNumberMarks: 0,
-            correctionMarks: 1
+            mode: "rubric_ai",
+            modelAnswer:
+              "Line number: 04\nCorrected line: `    print(x)`\nThe corrected line must be indented one level so line 04 starts in the same column as line 03.",
+            rubricPoints: [
+              {
+                id: "line-04",
+                text: "Award 1 mark for identifying line 04 as the line containing the error.",
+                marks: 1
+              },
+              {
+                id: "indented-print-correction",
+                text: "Award 1 mark for correcting line 04 to an indented print(x) aligned with line 03. Accept either four spaces or one tab for the indentation. Do not award this mark for unindented print(x).",
+                marks: 1
+              }
+            ],
+            maxScore: 2
           }
         }
       ]

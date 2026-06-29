@@ -20,7 +20,7 @@ describe("K349 paper import contract", () => {
       accessCodeCount: 1,
       questionCount: 5,
       partCount: 11,
-      totalMarks: 30
+      totalMarks: 32
     });
     expect(result.paper.questions[1].stimulus ?? []).toEqual([]);
     expect(result.paper.questions[1].parts[1].stimulus?.[0]).toMatchObject({
@@ -49,7 +49,7 @@ describe("K349 paper import contract", () => {
     expect(result.summary).toMatchObject({
       questionCount: 6,
       partCount: 13,
-      totalMarks: 38
+      totalMarks: 40
     });
     expect(result.paper.questions[0].parts[0]).toMatchObject({
       type: "multiple_choice",
@@ -63,6 +63,28 @@ describe("K349 paper import contract", () => {
     expect(result.paper.questions[1].parts[1].stimulus?.[0]).toMatchObject({
       type: "code",
       title: "Prize code generator"
+    });
+    const q4b = result.paper.questions
+      .flatMap((question) => question.parts)
+      .find((part) => part.id === "q4b");
+
+    expect(q4b).toMatchObject({
+      response: { kind: "error_correction" },
+      marking: {
+        mode: "rubric_ai",
+        modelAnswer: expect.stringContaining("`    print(x)`"),
+        maxScore: 2
+      }
+    });
+    expect(q4b?.marking).toMatchObject({
+      rubricPoints: [
+        expect.objectContaining({
+          text: expect.stringContaining("identifying line 04")
+        }),
+        expect.objectContaining({
+          text: expect.stringContaining("Do not award this mark for unindented print(x).")
+        })
+      ]
     });
     expect(result.paper.questions[4].title).toBe("Team Qualification Algorithm");
     expect(result.paper.questions[5].title).toBe("Countdown Algorithm");

@@ -8,7 +8,7 @@ title: K349 G3 Computing Parallel Practice Paper
 syllabus: K349 G3 Computing
 mode: practice
 status: published
-totalMarks: 38
+totalMarks: 40
 accessCodes:
   - code: G3K349
     label: "G3 Computing"
@@ -322,7 +322,7 @@ questions:
   - id: q4
     number: "4"
     title: Correcting Program Errors
-    marks: 2
+    marks: 4
     outcomeId: python-error-correction
     variantGroupId: python-syntax-and-indentation-errors
     difficulty: standard
@@ -331,7 +331,7 @@ questions:
         label: "4(a)"
         type: error_correction
         prompt: Identify the line number of the error and write the corrected line.
-        marks: 1
+        marks: 2
         stimulus:
           - type: code
             language: python
@@ -352,13 +352,13 @@ questions:
             - message = "You're leaving already?"
             - message = 'You\'re leaving already?'
           lineNumberMarks: 1
-          correctionMarks: 0
+          correctionMarks: 1
           caseSensitive: true
       - id: q4b
         label: "4(b)"
         type: error_correction
         prompt: Identify the line number of the error and write the corrected line.
-        marks: 1
+        marks: 2
         stimulus:
           - type: code
             language: python
@@ -381,13 +381,19 @@ questions:
           showLineNumber: true
           showCorrectedLine: true
         marking:
-          mode: error_correction
-          expectedLineNumber: "04"
-          acceptedCorrectedLines:
-            - "    print(x)"
-          lineNumberMarks: 0
-          correctionMarks: 1
-          caseSensitive: true
+          mode: rubric_ai
+          modelAnswer: |-
+              Line number: 04
+              Corrected line: `    print(x)`
+              The corrected line must be indented one level so line 04 starts in the same column as line 03.
+          rubricPoints:
+            - id: line-04
+              text: Award 1 mark for identifying line 04 as the line containing the error.
+              marks: 1
+            - id: indented-print-correction
+              text: Award 1 mark for correcting line 04 to an indented print(x) aligned with line 03. Accept either four spaces or one tab for the indentation. Do not award this mark for unindented print(x).
+              marks: 1
+          maxScore: 2
   - id: q5
     number: "5"
     title: Team Qualification Algorithm

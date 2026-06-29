@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0",
-  "paperId": "k349-g3-parallel-practice-paper",
-  "title": "K349 G3 Computing Parallel Practice Paper",
+  "paperId": "k349-wa2-mock",
+  "title": "K349 G3 Computing Secondary 3 WA2 Mock Paper",
   "syllabus": "K349 G3 Computing",
   "mode": "practice",
   "status": "published",
-  "totalMarks": 38,
+  "totalMarks": 40,
   "accessCodes": [
     {
-      "code": "G3K349",
+      "code": "SEC3WA2",
       "label": "G3 Computing"
     }
   ],
@@ -395,7 +395,7 @@
       "id": "q4",
       "number": "4",
       "title": "Correcting Program Errors",
-      "marks": 2,
+      "marks": 4,
       "outcomeId": "python-error-correction",
       "variantGroupId": "python-syntax-and-indentation-errors",
       "difficulty": "standard",
@@ -405,7 +405,7 @@
           "label": "4(a)",
           "type": "error_correction",
           "prompt": "Identify the line number of the error and write the corrected line.",
-          "marks": 1,
+          "marks": 2,
           "stimulus": [
             {
               "type": "code",
@@ -431,7 +431,7 @@
               "message = 'You\\'re leaving already?'"
             ],
             "lineNumberMarks": 1,
-            "correctionMarks": 0,
+            "correctionMarks": 1,
             "caseSensitive": true
           }
         },
@@ -440,7 +440,7 @@
           "label": "4(b)",
           "type": "error_correction",
           "prompt": "Identify the line number of the error and write the corrected line.",
-          "marks": 1,
+          "marks": 2,
           "stimulus": [
             {
               "type": "code",
@@ -459,14 +459,21 @@
             "showCorrectedLine": true
           },
           "marking": {
-            "mode": "error_correction",
-            "expectedLineNumber": "04",
-            "acceptedCorrectedLines": [
-              "    print(x)"
+            "mode": "rubric_ai",
+            "modelAnswer": "Line number: 04\nCorrected line: `    print(x)`\nThe corrected line must be indented one level so line 04 starts in the same column as line 03.",
+            "rubricPoints": [
+              {
+                "id": "line-04",
+                "text": "Award 1 mark for identifying line 04 as the line containing the error.",
+                "marks": 1
+              },
+              {
+                "id": "indented-print-correction",
+                "text": "Award 1 mark for correcting line 04 to an indented print(x) aligned with line 03. Accept either four spaces or one tab for the indentation. Do not award this mark for unindented print(x).",
+                "marks": 1
+              }
             ],
-            "lineNumberMarks": 0,
-            "correctionMarks": 1,
-            "caseSensitive": true
+            "maxScore": 2
           }
         }
       ]
