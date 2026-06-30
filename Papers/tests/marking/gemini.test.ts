@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { buildGeminiPrompt, requestGeminiMark } from "@/lib/marking/gemini";
 import { markPartAnswer } from "@/lib/marking/mark";
 
@@ -71,6 +71,98 @@ describe("Gemini marking", () => {
 
     expect(result.status).toBe("failed");
     expect(result.studentFeedback).not.toContain("Use an if statement");
+  });
+
+  it("marks empty rubric answers as zero without calling Gemini", async () => {
+    const generateGemini = vi.fn();
+
+    const result = await markPartAnswer(
+      {
+        id: "part",
+        label: "1(b)",
+        type: "structured_response",
+        prompt: "Explain agile.",
+        marks: 2,
+        stimulus: [],
+        markingSchema: rubricMarking
+      },
+      { value: "" },
+      { generateGemini }
+    );
+
+    expect(generateGemini).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      status: "marked",
+      score: 0,
+      maxScore: 2,
+      missingRubricPoints: [],
+      exactMarkingDetails: null
+    });
+    expect(result.studentFeedback).not.toContain("Use an if statement");
+  });
+
+  it("marks whitespace-only rubric answers as zero without calling Gemini", async () => {
+    const generateGemini = vi.fn();
+
+    const result = await markPartAnswer(
+      {
+        id: "part",
+        label: "1(b)",
+        type: "structured_response",
+        prompt: "Explain agile.",
+        marks: 2,
+        stimulus: [],
+        markingSchema: rubricMarking
+      },
+      { value: " \n\t " },
+      { generateGemini }
+    );
+
+    expect(generateGemini).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      status: "marked",
+      score: 0,
+      maxScore: 2,
+      missingRubricPoints: [],
+      exactMarkingDetails: null
+    });
+  });
+
+  it("still calls Gemini for non-blank rubric answers and stores the returned mark", async () => {
+    const generateGemini = vi.fn(async () =>
+      JSON.stringify({
+        score: 1,
+        maxScore: 2,
+        studentFeedback: "You described short cycles but missed adapting later.",
+        tutorRationale: "Mentions iterations but not handling changed requirements.",
+        missingRubricPoints: ["Explains that changes can be handled in a later sprint."]
+      })
+    );
+
+    const result = await markPartAnswer(
+      {
+        id: "part",
+        label: "1(b)",
+        type: "structured_response",
+        prompt: "Explain agile.",
+        marks: 2,
+        stimulus: [],
+        markingSchema: rubricMarking
+      },
+      { value: "Teams work in short iterations." },
+      { generateGemini }
+    );
+
+    expect(generateGemini).toHaveBeenCalledOnce();
+    expect(result).toMatchObject({
+      status: "marked",
+      score: 1,
+      maxScore: 2,
+      studentFeedback: "You described short cycles but missed adapting later.",
+      tutorRationale: "Mentions iterations but not handling changed requirements.",
+      missingRubricPoints: ["Explains that changes can be handled in a later sprint."],
+      exactMarkingDetails: null
+    });
   });
 
   it("minimizes private student data and instructs hint-safe feedback", () => {

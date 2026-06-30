@@ -155,8 +155,21 @@ async function markRubricAi(
   schema: RubricAiMarkingSchema,
   generateGemini?: GeminiGenerate
 ): Promise<MarkingResult> {
+  const maxScore = schema.maxScore ?? part.marks;
+
+  if (isBlankStudentAnswer(answer)) {
+    return {
+      status: "marked",
+      score: 0,
+      maxScore,
+      studentFeedback: "No answer was provided, so this response earned 0 marks.",
+      tutorRationale: "Rubric AI marking was skipped because the submitted answer was blank.",
+      missingRubricPoints: [],
+      exactMarkingDetails: null
+    };
+  }
+
   try {
-    const maxScore = schema.maxScore ?? part.marks;
     const result = await requestGeminiMark(
       {
         prompt: part.prompt,
@@ -188,6 +201,10 @@ async function markRubricAi(
       exactMarkingDetails: null
     };
   }
+}
+
+export function isBlankStudentAnswer(answer: StudentAnswer) {
+  return answerToString(answer).trim().length === 0;
 }
 
 function answerToString(answer: StudentAnswer) {

@@ -72,7 +72,7 @@
           "id": "q1b",
           "label": "1(b)",
           "type": "structured_response",
-          "prompt": "A school is developing a new online homework system for students. The first version only needs students to log in, view homework, and submit answers. However, after teachers try the first version, they request extra features such as automatic marking, late-submission warnings, and progress reports.\n\nThe development team decides to use agile sprint cycles instead of completing the whole system in one long project.\n\nExplain how using sprint cycles helps the software engineers stay flexible when developing this homework system, especially when teachers request changes during the project.",
+          "prompt": "Explain how sprints in agile development allow requirements to be changed during development.",
           "marks": 4,
           "response": {
             "kind": "structured_response",
@@ -81,22 +81,22 @@
           "marking": {
             "mode": "rubric_ai",
             "maxScore": 4,
-            "modelAnswer": "Sprint cycles break the project into smaller parts. Each sprint focuses on selected requirements or features, and a working version can be shown to users at the end of a sprint. Feedback and changed requirements can then be added, removed, or reprioritised before the next sprint. Repeated testing and refinement help the team find problems earlier and adapt without restarting the whole project.",
+            "modelAnswer": "Agile development is broken down into short sprints or development cycles. In each sprint, a smaller selected subset of requirements is implemented. At the end of each sprint, working software is shown to users so feedback can be collected and the product or requirements can be refined. This feedback and refinement happens repeatedly across sprint cycles, so requirements can continue to evolve throughout development.",
             "rubricPoints": [
               {
-                "text": "Explains that the project is broken into smaller parts so the team does not need to build the whole system at once.",
+                "text": "Explains that agile development is broken down into short sprints or development cycles.",
                 "marks": 1
               },
               {
-                "text": "Explains that each sprint focuses on selected requirements or features.",
+                "text": "Explains that each sprint implements a smaller selected subset of requirements.",
                 "marks": 1
               },
               {
-                "text": "Explains that feedback or changed requirements can be handled or reprioritised before a later sprint.",
+                "text": "Explains that working software is shown to users at the end of each sprint so feedback can be collected and the product or requirements can be refined.",
                 "marks": 1
               },
               {
-                "text": "Explains that repeated testing and refinement help find problems earlier or make adaptation easier.",
+                "text": "Explains the iterative nature of agile development, where feedback and refinement happen repeatedly across sprint cycles so requirements can continue to evolve.",
                 "marks": 1
               }
             ]
