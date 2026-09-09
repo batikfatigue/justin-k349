@@ -13,6 +13,7 @@ export default async function ResultsPage({ params }: { params: { attemptId: str
         <h1>{results.paper?.title}</h1>
         <p className="body-copy">
           Score: {results.totalScore} / {results.paper?.totalMarks}
+          {` · Time ${formatElapsed(results.attempt.elapsedSeconds)}`}
           {results.pendingCount > 0 ? ` · ${results.pendingCount} part(s) pending review` : ""}
         </p>
       </header>
@@ -43,4 +44,10 @@ export default async function ResultsPage({ params }: { params: { attemptId: str
       </Link>
     </main>
   );
+}
+
+function formatElapsed(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}m ${seconds}s`;
 }

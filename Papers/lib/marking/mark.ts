@@ -204,7 +204,28 @@ async function markRubricAi(
 }
 
 export function isBlankStudentAnswer(answer: StudentAnswer) {
-  return answerToString(answer).trim().length === 0;
+  if (typeof answer === "string" || !answer) {
+    return answerToString(answer).trim().length === 0;
+  }
+
+  const fields: (string | string[] | Record<string, string> | undefined)[] = [
+    answer.value,
+    answer.values,
+    answer.lineNumber,
+    answer.correctedLine
+  ];
+
+  if (answer.rows) {
+    fields.push(...Object.values(answer.rows));
+  }
+
+  return fields.every((field) => {
+    if (Array.isArray(field)) {
+      return field.every((item) => item.trim().length === 0);
+    }
+
+    return typeof field !== "string" || field.trim().length === 0;
+  });
 }
 
 function answerToString(answer: StudentAnswer) {
