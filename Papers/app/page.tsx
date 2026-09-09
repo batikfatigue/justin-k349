@@ -15,7 +15,9 @@ export default async function HomePage({
       ? "That access code is not active."
       : searchParams.error === "name"
         ? "Enter your name before opening papers."
-        : null;
+        : searchParams.error === "limited"
+          ? "Too many attempts. Wait a few minutes and try again."
+          : null;
 
   return (
     <main className="section">

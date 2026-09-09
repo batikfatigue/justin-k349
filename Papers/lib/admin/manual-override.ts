@@ -3,6 +3,7 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import { getDb, type Db } from "@/lib/db/client";
 import { attempts, partAnswers, questionParts } from "@/lib/db/schema";
+import { isUuid } from "@/lib/security";
 
 type AttemptRow = typeof attempts.$inferSelect;
 type QuestionPartRow = typeof questionParts.$inferSelect;
@@ -53,6 +54,10 @@ export async function manuallyOverrideAttemptPartMark(
     now?: Date;
   } = {}
 ): Promise<ManualOverrideResult> {
+  if (!isUuid(input.attemptId) || !isUuid(input.questionPartId)) {
+    return { ok: false, reason: "attempt_not_found" };
+  }
+
   const db = options.db ?? getDb();
 
   return manuallyOverrideAttemptPartMarkWithRepository(

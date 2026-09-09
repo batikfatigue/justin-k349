@@ -183,7 +183,7 @@ async function markRubricAi(
 
     return {
       status: "marked",
-      score: Math.round(result.score),
+      score: result.score,
       maxScore,
       studentFeedback: result.studentFeedback,
       tutorRationale: result.tutorRationale,

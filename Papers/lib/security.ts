@@ -37,6 +37,14 @@ export function verifySignedValue(signedValue: string | undefined) {
   return timingSafeEqual(signatureBuffer, expectedBuffer) ? value : null;
 }
 
+export function fingerprintSecret(value: string | undefined) {
+  return hmac(value ?? "");
+}
+
+export function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
 export function normalizeStudentName(name: string) {
   return name.trim().replace(/\s+/g, " ").toLowerCase();
 }

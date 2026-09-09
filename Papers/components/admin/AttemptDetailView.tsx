@@ -606,6 +606,10 @@ function OverrideNotice({ outcome, reason }: { outcome?: string; reason?: string
 }
 
 function failureMessage(reason?: string) {
+  if (reason === "manual_override") {
+    return "This part has a saved manual mark, so AI remarking was skipped. Edit the manual mark instead.";
+  }
+
   if (reason === "marking_failed") {
     return "Gemini could not complete marking; the part now shows a failed marking status.";
   }

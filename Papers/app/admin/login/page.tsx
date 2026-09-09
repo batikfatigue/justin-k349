@@ -8,6 +8,7 @@ export default function TutorLoginPage({
 }) {
   const hasError = searchParams.error === "invalid";
   const hasConfigError = searchParams.error === "misconfigured";
+  const hasRateLimitError = searchParams.error === "rate_limited";
 
   return (
     <main className="section">
@@ -17,6 +18,9 @@ export default function TutorLoginPage({
         <p className="body-copy">Use the configured tutor password to review imports and attempts.</p>
       </header>
       {hasError ? <p className="notice error">The password did not match.</p> : null}
+      {hasRateLimitError ? (
+        <p className="notice error">Too many sign-in attempts. Wait a few minutes and try again.</p>
+      ) : null}
       {hasConfigError ? (
         <p className="notice error">Tutor sign-in is not configured. Set TUTOR_PASSWORD_HASH to a bcrypt hash.</p>
       ) : null}
