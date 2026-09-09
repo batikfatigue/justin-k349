@@ -6,7 +6,7 @@ import { attempts, partAnswers, questionParts, questions } from "@/lib/db/schema
 import type { MarkingResult } from "@/lib/domain";
 import { type GeminiGenerate } from "@/lib/marking/gemini";
 import { markAndPersistPartAnswer } from "@/lib/marking/attempt";
-import { normalizePartMarkingSchema } from "@/lib/paper/presentation";
+import { isUuid } from "@/lib/security";
 
 type AttemptRow = typeof attempts.$inferSelect;
 type QuestionRow = typeof questions.$inferSelect;
@@ -19,6 +19,7 @@ export type AiRemarkFailureReason =
   | "part_not_found"
   | "answer_not_found"
   | "part_not_ai"
+  | "manual_override"
   | "marking_failed";
 
 export type AiRemarkResult =
@@ -60,6 +61,10 @@ export async function resubmitAttemptPartToAiMarking(
     now?: Date;
   } = {}
 ): Promise<AiRemarkResult> {
+  if (!isUuid(attemptId) || !isUuid(questionPartId)) {
+    return { ok: false, reason: "attempt_not_found" };
+  }
+
   const db = options.db ?? getDb();
 
   return resubmitAttemptPartToAiMarkingWithRepository(
@@ -103,10 +108,11 @@ export async function resubmitAttemptPartToAiMarkingWithRepository(
     return { ok: false, reason: "answer_not_found" };
   }
 
-  const markingSchema = normalizePartMarkingSchema({
-    label: partWithQuestion.part.label,
-    markingSchema: partWithQuestion.part.markingSchema
-  });
+  if (answer.markingSource === "manual") {
+    return { ok: false, reason: "manual_override" };
+  }
+
+  const markingSchema = partWithQuestion.part.markingSchema;
 
   if (markingSchema.mode !== "rubric_ai") {
     return { ok: false, reason: "part_not_ai" };

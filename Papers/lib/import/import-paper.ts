@@ -96,7 +96,6 @@ export async function importPaper(paper: ImportedPaper): Promise<ImportResult> {
           target: accessCodes.codeHash,
           set: {
             label: accessCode.label,
-            active: true,
             updatedAt: now
           }
         })
