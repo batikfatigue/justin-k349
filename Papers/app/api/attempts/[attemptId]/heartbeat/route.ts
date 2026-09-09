@@ -3,7 +3,10 @@ import { getStudentSession } from "@/lib/auth/session";
 import { isUuid } from "@/lib/security";
 import { updateStudentHeartbeat } from "@/lib/student/data";
 
-export async function POST({ params }: { params: { attemptId: string } }) {
+export async function POST(
+  _request: Request,
+  { params }: { params: { attemptId: string } }
+) {
   const session = getStudentSession();
 
   if (!session) {
