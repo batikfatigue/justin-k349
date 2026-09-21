@@ -1,5 +1,6 @@
 import {
   boolean,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -171,6 +172,7 @@ export const attempts = pgTable(
       .references(() => accessCodes.id, { onDelete: "restrict" }),
     studentName: text("student_name").notNull(),
     normalizedStudentName: text("normalized_student_name").notNull(),
+    sessionToken: text("session_token"),
     attemptNumber: integer("attempt_number").notNull(),
     status: text("status").notNull().default("in_progress"),
     startedAt: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
@@ -186,7 +188,13 @@ export const attempts = pgTable(
     ),
     statusIdx: index("attempts_status_idx").on(table.status),
     lastSeenIdx: index("attempts_last_seen_idx").on(table.lastSeenAt),
-    startedAtIdx: index("attempts_started_at_idx").on(table.startedAt.desc(), table.id.desc())
+    startedAtIdx: index("attempts_started_at_idx").on(table.startedAt.desc(), table.id.desc()),
+    paperStudentAttemptUnique: uniqueIndex("attempts_paper_student_attempt_unique").on(
+      table.paperId,
+      table.accessCodeId,
+      table.normalizedStudentName,
+      table.attemptNumber
+    )
   })
 );
 
@@ -204,7 +212,7 @@ export const partAnswers = pgTable(
       .notNull()
       .references(() => questionParts.id, { onDelete: "restrict" }),
     answer: jsonb("answer").$type<StudentAnswer>().notNull().default({}),
-    score: integer("score"),
+    score: doublePrecision("score"),
     maxScore: integer("max_score").notNull(),
     markingStatus: text("marking_status").notNull().default("pending"),
     markingSource: text("marking_source").$type<MarkingSource>().notNull().default("auto"),

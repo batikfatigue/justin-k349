@@ -102,7 +102,6 @@ export async function importPaper(paper: ImportedPaper): Promise<ImportResult> {
           target: accessCodes.codeHash,
           set: {
             label: sql`excluded.label`,
-            active: true,
             updatedAt: now
           }
         })
