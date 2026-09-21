@@ -377,6 +377,22 @@ export async function submitStudentAttempt(attemptId: string, session: StudentSe
   }
 
   const db = getDb();
+  const now = new Date();
+  const [submitted] = await db
+    .update(attempts)
+    .set({
+      status: "submitted",
+      submittedAt: now,
+      lastSeenAt: now,
+      elapsedSeconds: elapsedSinceStart(attempt, now)
+    })
+    .where(and(eq(attempts.id, attemptId), eq(attempts.status, "in_progress")))
+    .returning();
+
+  if (!submitted) {
+    return (await getStudentAttempt(attemptId, session)) ?? attempt;
+  }
+
   const allQuestions = await db
     .select()
     .from(questions)
@@ -393,7 +409,6 @@ export async function submitStudentAttempt(attemptId: string, session: StudentSe
     .where(eq(partAnswers.attemptId, attemptId));
   const answerByPartId = new Map(existingAnswers.map((answer) => [answer.questionPartId, answer]));
   const questionById = new Map(allQuestions.map((question) => [question.id, question]));
-  const now = new Date();
 
   const markablePartsWithQuestions = allParts.flatMap((part) => {
     const question = questionById.get(part.questionId);
@@ -410,17 +425,6 @@ export async function submitStudentAttempt(attemptId: string, session: StudentSe
       await persistFailedMark(db, attemptId, question, part, answer, now, error);
     }
   });
-
-  const [submitted] = await db
-    .update(attempts)
-    .set({
-      status: "submitted",
-      submittedAt: now,
-      lastSeenAt: now,
-      elapsedSeconds: elapsedSinceStart(attempt, now)
-    })
-    .where(eq(attempts.id, attemptId))
-    .returning();
 
   return submitted;
 }

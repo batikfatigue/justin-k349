@@ -122,7 +122,7 @@ export async function resubmitAttemptPartToAiMarkingWithRepository(
     return { ok: false, reason: "part_not_ai" };
   }
 
-  const { markedAt, result } = await repository.markPart({
+  const { markedAt, persisted, result } = await repository.markPart({
     ...partWithQuestion,
     answer,
     attempt,
@@ -131,6 +131,10 @@ export async function resubmitAttemptPartToAiMarkingWithRepository(
       markingSchema
     }
   });
+
+  if (!persisted) {
+    return { ok: false, reason: "manual_override" };
+  }
 
   if (result.status !== "marked") {
     return {
@@ -199,6 +203,7 @@ function createDrizzleAiRemarkRepository(
         generateGemini: options.generateGemini,
         now: options.now,
         part,
+        preserveManualMark: true,
         question
       });
     }

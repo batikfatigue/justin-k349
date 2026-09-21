@@ -13,22 +13,34 @@ const buckets = new Map<string, RateLimitBucket>();
 const maxTrackedKeys = 10_000;
 
 export function recordRateLimitAttempt(key: string, windowMs: number, now = Date.now()) {
+  const bucket = buckets.get(key);
+
+  if (bucket && bucket.resetAt > now) {
+    bucket.count += 1;
+    return;
+  }
+
+  buckets.delete(key);
+
   if (buckets.size >= maxTrackedKeys) {
-    for (const [bucketKey, bucket] of buckets) {
-      if (bucket.resetAt <= now) {
+    for (const [bucketKey, existing] of buckets) {
+      if (existing.resetAt <= now) {
         buckets.delete(bucketKey);
       }
     }
   }
 
-  const bucket = buckets.get(key);
+  while (buckets.size >= maxTrackedKeys) {
+    const oldestKey = buckets.keys().next().value;
 
-  if (!bucket || bucket.resetAt <= now) {
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return;
+    if (oldestKey === undefined) {
+      break;
+    }
+
+    buckets.delete(oldestKey);
   }
 
-  bucket.count += 1;
+  buckets.set(key, { count: 1, resetAt: now + windowMs });
 }
 
 export function isRateLimited(key: string, limit: number, now = Date.now()) {
@@ -40,9 +52,17 @@ export function resetRateLimit(key: string) {
   buckets.delete(key);
 }
 
+// Prefer the proxy-set x-real-ip; otherwise use the last x-forwarded-for hop,
+// which is the one appended by the proxy rather than supplied by the client.
 export function requestClientKey() {
-  const forwardedFor = headers().get("x-forwarded-for");
-  const client = forwardedFor?.split(",")[0]?.trim() || headers().get("x-real-ip")?.trim();
+  const realIp = headers().get("x-real-ip")?.trim();
+
+  if (realIp) {
+    return realIp;
+  }
+
+  const forwardedFor = headers().get("x-forwarded-for")?.split(",") ?? [];
+  const client = forwardedFor[forwardedFor.length - 1]?.trim();
 
   return client && client.length > 0 ? client : "unknown";
 }

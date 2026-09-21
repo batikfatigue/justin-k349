@@ -1,5 +1,6 @@
 import "server-only";
 
+import { ne } from "drizzle-orm";
 import { getDb, type Db } from "@/lib/db/client";
 import { partAnswers, questionParts, questions } from "@/lib/db/schema";
 import type { MarkingResult, MarkingSource, StudentAnswer } from "@/lib/domain";
@@ -70,6 +71,7 @@ export async function markAndPersistPartAnswer({
   generateGemini,
   now = new Date(),
   part,
+  preserveManualMark = false,
   question
 }: {
   answer: StudentAnswer;
@@ -78,6 +80,7 @@ export async function markAndPersistPartAnswer({
   generateGemini?: GeminiGenerate;
   now?: Date;
   part: QuestionPartRow;
+  preserveManualMark?: boolean;
   question: QuestionRow;
 }) {
   const result = await markPartAnswer(buildMarkablePart(question, part), answer, {
@@ -85,7 +88,7 @@ export async function markAndPersistPartAnswer({
   });
   const fields = buildPartAnswerMarkFields({ answer, markedAt: now, result });
 
-  await db
+  const upsert = db
     .insert(partAnswers)
     .values({
       attemptId,
@@ -95,11 +98,22 @@ export async function markAndPersistPartAnswer({
     })
     .onConflictDoUpdate({
       target: [partAnswers.attemptId, partAnswers.questionPartId],
-      set: fields
+      set: fields,
+      ...(preserveManualMark ? { setWhere: ne(partAnswers.markingSource, "manual") } : {})
     });
+
+  let persisted = true;
+
+  if (preserveManualMark) {
+    const written = await upsert.returning({ id: partAnswers.id });
+    persisted = written.length > 0;
+  } else {
+    await upsert;
+  }
 
   return {
     result,
-    markedAt: now
+    markedAt: now,
+    persisted
   };
 }
