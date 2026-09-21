@@ -2,7 +2,13 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { signValue, verifySignedValue, normalizeStudentName } from "@/lib/security";
+import { getEnv } from "@/lib/env";
+import {
+  fingerprintSecret,
+  normalizeStudentName,
+  signValue,
+  verifySignedValue
+} from "@/lib/security";
 
 const tutorCookieName = "tutor_session";
 const studentCookieName = "student_access";
@@ -11,6 +17,7 @@ const oneDay = 24 * 60 * 60;
 
 type TutorSession = {
   kind: "tutor";
+  secretFingerprint: string;
   expiresAt: number;
 };
 
@@ -44,9 +51,14 @@ function isFresh(payload: { expiresAt: number } | null) {
   return Boolean(payload && payload.expiresAt > Date.now());
 }
 
+function tutorSecretFingerprint() {
+  return fingerprintSecret(getEnv().TUTOR_PASSWORD_HASH);
+}
+
 export function setTutorSession() {
   const payload: TutorSession = {
     kind: "tutor",
+    secretFingerprint: tutorSecretFingerprint(),
     expiresAt: Date.now() + oneDay * 1000
   };
 
@@ -65,7 +77,16 @@ export function clearTutorSession() {
 
 export function getTutorSession() {
   const session = decode<TutorSession>(cookies().get(tutorCookieName)?.value);
-  return isFresh(session) && session?.kind === "tutor" ? session : null;
+
+  if (
+    !isFresh(session) ||
+    session?.kind !== "tutor" ||
+    session.secretFingerprint !== tutorSecretFingerprint()
+  ) {
+    return null;
+  }
+
+  return session;
 }
 
 export function requireTutorSession() {
@@ -103,6 +124,7 @@ export function clearStudentSession() {
 
 export function getStudentSession() {
   const session = decode<StudentSession>(cookies().get(studentCookieName)?.value);
+
   return isFresh(session) && session?.kind === "student" ? session : null;
 }
 

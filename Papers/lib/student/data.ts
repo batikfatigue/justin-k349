@@ -13,16 +13,24 @@ import {
   questions
 } from "@/lib/db/schema";
 import type { ResponseSchema, StudentAnswer } from "@/lib/domain";
-import { markAndPersistPartAnswer } from "@/lib/marking/attempt";
+import {
+  buildPartAnswerMarkFields,
+  markAndPersistPartAnswer
+} from "@/lib/marking/attempt";
 import {
   displayQuestionTitle,
   moveQuestionCodeStimuliToTargetPart,
   normalizeChoicePart
 } from "@/lib/paper/presentation";
-import { hashAccessCode } from "@/lib/security";
+import { hashAccessCode, isUuid } from "@/lib/security";
 import type { StudentSession } from "@/lib/auth/session";
 
 const SUBMIT_MARKING_CONCURRENCY = 5;
+const attemptCreateRetries = 3;
+
+type AttemptRow = typeof attempts.$inferSelect;
+type QuestionRow = typeof questions.$inferSelect;
+type QuestionPartRow = typeof questionParts.$inferSelect;
 
 async function runWithConcurrency<T, R>(
   items: readonly T[],
@@ -53,6 +61,15 @@ export async function resolveAccessCode(code: string) {
   return accessCode ?? null;
 }
 
+async function isAccessCodeActive(accessCodeId: string, db: Db) {
+  const [accessCode] = await db
+    .select({ active: accessCodes.active })
+    .from(accessCodes)
+    .where(eq(accessCodes.id, accessCodeId));
+
+  return accessCode?.active === true;
+}
+
 export async function getPublishedPapersForStudent(accessCodeId: string) {
   return getDb()
     .select({
@@ -63,6 +80,10 @@ export async function getPublishedPapersForStudent(accessCodeId: string) {
     })
     .from(paperAccessCodes)
     .innerJoin(papers, eq(paperAccessCodes.paperId, papers.id))
+    .innerJoin(
+      accessCodes,
+      and(eq(paperAccessCodes.accessCodeId, accessCodes.id), eq(accessCodes.active, true))
+    )
     .where(and(eq(paperAccessCodes.accessCodeId, accessCodeId), eq(papers.status, "published")))
     .orderBy(asc(papers.title));
 }
@@ -78,6 +99,10 @@ export async function getStudentPaperIntro(paperId: string, session: StudentSess
     })
     .from(paperAccessCodes)
     .innerJoin(papers, eq(paperAccessCodes.paperId, papers.id))
+    .innerJoin(
+      accessCodes,
+      and(eq(paperAccessCodes.accessCodeId, accessCodes.id), eq(accessCodes.active, true))
+    )
     .where(
       and(
         eq(paperAccessCodes.paperId, paperId),
@@ -115,30 +140,61 @@ export async function getStudentPaperIntro(paperId: string, session: StudentSess
 
 export async function createStudentAttempt(paperId: string, session: StudentSession) {
   const paper = await getStudentPaperIntro(paperId, session);
+  const paperVersionId = paper?.currentVersionId;
 
-  if (!paper?.currentVersionId) {
+  if (!paperVersionId) {
     notFound();
   }
 
-  const [created] = await getDb()
-    .insert(attempts)
-    .values({
-      paperId,
-      paperVersionId: paper.currentVersionId,
-      accessCodeId: session.accessCodeId,
-      studentName: session.studentName,
-      normalizedStudentName: session.normalizedStudentName,
-      attemptNumber: paper.nextAttemptNumber,
-      status: "in_progress",
-      elapsedSeconds: 0
-    })
-    .returning();
+  const db = getDb();
 
-  return created;
+  for (let retry = 0; retry < attemptCreateRetries; retry += 1) {
+    try {
+      return await db.transaction(async (tx) => {
+        const [attemptAggregate] = await tx
+          .select({ latestAttempt: max(attempts.attemptNumber) })
+          .from(attempts)
+          .where(
+            and(
+              eq(attempts.paperId, paperId),
+              eq(attempts.accessCodeId, session.accessCodeId),
+              eq(attempts.normalizedStudentName, session.normalizedStudentName)
+            )
+          );
+
+        const [created] = await tx
+          .insert(attempts)
+          .values({
+            paperId,
+            paperVersionId,
+            accessCodeId: session.accessCodeId,
+            studentName: session.studentName,
+            normalizedStudentName: session.normalizedStudentName,
+            attemptNumber: (attemptAggregate?.latestAttempt ?? 0) + 1,
+            status: "in_progress",
+            elapsedSeconds: 0
+          })
+          .returning();
+
+        return created;
+      });
+    } catch (error) {
+      if (!isUniqueViolation(error) || retry === attemptCreateRetries - 1) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error("Unable to create attempt.");
 }
 
 export async function getStudentAttempt(attemptId: string, session: StudentSession) {
-  const [attempt] = await getDb()
+  if (!isUuid(attemptId)) {
+    return null;
+  }
+
+  const db = getDb();
+  const [attempt] = await db
     .select()
     .from(attempts)
     .where(
@@ -149,7 +205,11 @@ export async function getStudentAttempt(attemptId: string, session: StudentSessi
       )
     );
 
-  return attempt ?? null;
+  if (!attempt || !(await isAccessCodeActive(session.accessCodeId, db))) {
+    return null;
+  }
+
+  return attempt;
 }
 
 export async function getStudentQuestion(attemptId: string, questionNumber: number, session: StudentSession) {
@@ -290,37 +350,49 @@ export async function saveQuestionAnswers(
       });
   }
 
-  await updateStudentAttemptProgress(
-    db,
-    attemptId,
-    session,
-    Number(formData.get("elapsedSeconds") ?? 0),
-    now
-  );
+  await updateStudentAttemptProgress(db, safeQuestion.attempt, session, now);
 
   return safeQuestion;
 }
 
-export async function updateStudentHeartbeat(
-  attemptId: string,
-  session: StudentSession,
-  elapsedSeconds: number
-) {
-  return updateStudentAttemptProgress(getDb(), attemptId, session, elapsedSeconds, new Date());
+export async function updateStudentHeartbeat(attemptId: string, session: StudentSession) {
+  const attempt = await getStudentAttempt(attemptId, session);
+
+  if (!attempt || attempt.status !== "in_progress") {
+    return null;
+  }
+
+  return updateStudentAttemptProgress(getDb(), attempt, session, new Date());
 }
 
-export async function submitStudentAttempt(
-  attemptId: string,
-  elapsedSeconds: number,
-  session: StudentSession
-) {
+export async function submitStudentAttempt(attemptId: string, session: StudentSession) {
   const attempt = await getStudentAttempt(attemptId, session);
 
   if (!attempt) {
     notFound();
   }
 
+  if (attempt.status === "submitted") {
+    return attempt;
+  }
+
   const db = getDb();
+  const now = new Date();
+  const [submitted] = await db
+    .update(attempts)
+    .set({
+      status: "submitted",
+      submittedAt: now,
+      lastSeenAt: now,
+      elapsedSeconds: elapsedSinceStart(attempt, now)
+    })
+    .where(and(eq(attempts.id, attemptId), eq(attempts.status, "in_progress")))
+    .returning();
+
+  if (!submitted) {
+    return (await getStudentAttempt(attemptId, session)) ?? attempt;
+  }
+
   const allQuestions = await db
     .select()
     .from(questions)
@@ -337,7 +409,6 @@ export async function submitStudentAttempt(
     .where(eq(partAnswers.attemptId, attemptId));
   const answerByPartId = new Map(existingAnswers.map((answer) => [answer.questionPartId, answer]));
   const questionById = new Map(allQuestions.map((question) => [question.id, question]));
-  const now = new Date();
 
   const markablePartsWithQuestions = allParts.flatMap((part) => {
     const question = questionById.get(part.questionId);
@@ -345,30 +416,15 @@ export async function submitStudentAttempt(
     return question ? [{ part, question }] : [];
   });
 
-  await runWithConcurrency(markablePartsWithQuestions, SUBMIT_MARKING_CONCURRENCY, ({ part, question }) => {
-    const savedAnswer = answerByPartId.get(part.id);
-    const answer = savedAnswer?.answer ?? defaultAnswer(part.responseSchema);
+  await runWithConcurrency(markablePartsWithQuestions, SUBMIT_MARKING_CONCURRENCY, async ({ part, question }) => {
+    const answer = answerByPartId.get(part.id)?.answer ?? defaultAnswer(part.responseSchema);
 
-    return markAndPersistPartAnswer({
-      answer,
-      attemptId,
-      db,
-      now,
-      part,
-      question
-    });
+    try {
+      await markAndPersistPartAnswer({ answer, attemptId, db, now, part, question });
+    } catch (error) {
+      await persistFailedMark(db, attemptId, question, part, answer, now, error);
+    }
   });
-
-  const [submitted] = await db
-    .update(attempts)
-    .set({
-      status: "submitted",
-      submittedAt: now,
-      lastSeenAt: now,
-      elapsedSeconds: Math.max(0, Math.floor(elapsedSeconds || attempt.elapsedSeconds))
-    })
-    .where(eq(attempts.id, attemptId))
-    .returning();
 
   return submitted;
 }
@@ -464,19 +520,9 @@ async function getStudentQuestionForSave(
     notFound();
   }
 
-  const [attempt] = await db
-    .select()
-    .from(attempts)
-    .where(
-      and(
-        eq(attempts.id, attemptId),
-        eq(attempts.accessCodeId, session.accessCodeId),
-        eq(attempts.normalizedStudentName, session.normalizedStudentName),
-        eq(attempts.status, "in_progress")
-      )
-    );
+  const attempt = await getStudentAttempt(attemptId, session);
 
-  if (!attempt) {
+  if (!attempt || attempt.status !== "in_progress") {
     notFound();
   }
 
@@ -513,20 +559,19 @@ async function getStudentQuestionForSave(
 
 async function updateStudentAttemptProgress(
   db: Db,
-  attemptId: string,
+  attempt: AttemptRow,
   session: StudentSession,
-  elapsedSeconds: number,
   now: Date
 ) {
   const [updated] = await db
     .update(attempts)
     .set({
       lastSeenAt: now,
-      elapsedSeconds: Math.max(0, Math.floor(elapsedSeconds || 0))
+      elapsedSeconds: elapsedSinceStart(attempt, now)
     })
     .where(
       and(
-        eq(attempts.id, attemptId),
+        eq(attempts.id, attempt.id),
         eq(attempts.accessCodeId, session.accessCodeId),
         eq(attempts.normalizedStudentName, session.normalizedStudentName),
         eq(attempts.status, "in_progress")
@@ -535,6 +580,61 @@ async function updateStudentAttemptProgress(
     .returning();
 
   return updated ?? null;
+}
+
+async function persistFailedMark(
+  db: Db,
+  attemptId: string,
+  question: QuestionRow,
+  part: QuestionPartRow,
+  answer: StudentAnswer,
+  now: Date,
+  error: unknown
+) {
+  const fields = buildPartAnswerMarkFields({
+    answer,
+    markedAt: now,
+    result: {
+      status: "failed",
+      score: 0,
+      maxScore: part.marks,
+      studentFeedback: "This answer was saved, but marking is pending review.",
+      tutorRationale: error instanceof Error ? error.message : "Marking failed.",
+      missingRubricPoints: [],
+      exactMarkingDetails: null
+    }
+  });
+
+  await db
+    .insert(partAnswers)
+    .values({
+      attemptId,
+      questionId: question.id,
+      questionPartId: part.id,
+      ...fields
+    })
+    .onConflictDoUpdate({
+      target: [partAnswers.attemptId, partAnswers.questionPartId],
+      set: fields
+    });
+}
+
+function elapsedSinceStart(attempt: AttemptRow, now: Date) {
+  return Math.max(0, Math.floor((now.getTime() - attempt.startedAt.getTime()) / 1000));
+}
+
+function isUniqueViolation(error: unknown) {
+  let current: unknown = error;
+
+  while (current && typeof current === "object") {
+    if ((current as { code?: string }).code === "23505") {
+      return true;
+    }
+
+    current = (current as { cause?: unknown }).cause;
+  }
+
+  return false;
 }
 
 function defaultAnswer(responseSchema: ResponseSchema | null): StudentAnswer {

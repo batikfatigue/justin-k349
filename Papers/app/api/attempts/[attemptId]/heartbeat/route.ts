@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { getStudentSession } from "@/lib/auth/session";
+import { isUuid } from "@/lib/security";
 import { updateStudentHeartbeat } from "@/lib/student/data";
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: { attemptId: string } }
 ) {
   const session = getStudentSession();
@@ -12,8 +13,11 @@ export async function POST(
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
-  const body = (await request.json().catch(() => ({}))) as { elapsedSeconds?: number };
-  const updated = await updateStudentHeartbeat(params.attemptId, session, body.elapsedSeconds ?? 0);
+  if (!isUuid(params.attemptId)) {
+    return NextResponse.json({ ok: false }, { status: 400 });
+  }
+
+  const updated = await updateStudentHeartbeat(params.attemptId, session);
 
   return NextResponse.json({ ok: Boolean(updated) });
 }

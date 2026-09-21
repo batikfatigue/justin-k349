@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { attempts, papers, partAnswers, questionParts, questions } from "@/lib/db/schema";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { accessCodes, attempts, papers, partAnswers, questionParts, questions } from "@/lib/db/schema";
 import type { StudentSession } from "@/lib/auth/session";
 import { getStudentQuestion, saveQuestionAnswers } from "@/lib/student/data";
 
@@ -130,6 +130,8 @@ class FakeDb {
   }
 }
 
+const attemptId = "11111111-2222-4333-8444-555555555555";
+
 const session: StudentSession = {
   kind: "student",
   accessCodeId: "access-1",
@@ -139,7 +141,7 @@ const session: StudentSession = {
 };
 
 const attemptRow = {
-  id: "attempt-1",
+  id: attemptId,
   paperId: "paper-1",
   paperVersionId: "version-1",
   accessCodeId: session.accessCodeId,
@@ -238,7 +240,15 @@ describe("student question data paths", () => {
     dbMocks.getDb.mockReturnValue(db);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("saves every visible part answer with one bulk upsert and no saved-answer read", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-29T00:00:42.000Z"));
+
+    db.tableRows.set(accessCodes, [{ id: session.accessCodeId, active: true }]);
     db.tableRows.set(attempts, [attemptRow]);
     db.tableRows.set(questions, [questionRow]);
     db.tableRows.set(questionParts, [shortTextPart, tablePart]);
@@ -248,9 +258,8 @@ describe("student question data paths", () => {
     formData.set("part-part-a", "count");
     formData.set("part-part-b-row-trace", "1, 2, 3");
     formData.set("part-part-b-row-output", "done");
-    formData.set("elapsedSeconds", "42");
 
-    await saveQuestionAnswers("attempt-1", 1, formData, session);
+    await saveQuestionAnswers(attemptId, 1, formData, session);
 
     const questionSelect = db.operations.find(
       (operation) => operation.kind === "select" && operation.table === questions
@@ -268,7 +277,7 @@ describe("student question data paths", () => {
     );
     expect(insertOperation?.valuesPayload).toEqual([
       expect.objectContaining({
-        attemptId: "attempt-1",
+        attemptId,
         questionId: "question-1",
         questionPartId: "part-a",
         answer: { value: "count" },
@@ -282,7 +291,7 @@ describe("student question data paths", () => {
         markedAt: null
       }),
       expect.objectContaining({
-        attemptId: "attempt-1",
+        attemptId,
         questionId: "question-1",
         questionPartId: "part-b",
         answer: { rows: { trace: "1, 2, 3", output: "done" } },
@@ -298,6 +307,7 @@ describe("student question data paths", () => {
   });
 
   it("restores saved visible answers without exposing marking metadata", async () => {
+    db.tableRows.set(accessCodes, [{ id: session.accessCodeId, active: true }]);
     db.tableRows.set(attempts, [attemptRow]);
     db.tableRows.set(papers, [paperRow]);
     db.tableRows.set(questions, [questionRow, otherQuestionRow]);
@@ -305,7 +315,7 @@ describe("student question data paths", () => {
     db.tableRows.set(partAnswers, [
       {
         id: "answer-1",
-        attemptId: "attempt-1",
+        attemptId,
         questionId: "question-1",
         questionPartId: "part-a",
         answer: { value: "saved answer" },
@@ -322,7 +332,7 @@ describe("student question data paths", () => {
       }
     ]);
 
-    const data = await getStudentQuestion("attempt-1", 1, session);
+    const data = await getStudentQuestion(attemptId, 1, session);
     const serializedParts = JSON.stringify(data.parts);
 
     expect(data.parts).toHaveLength(1);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export function Stopwatch({
   attemptId,
@@ -10,11 +10,6 @@ export function Stopwatch({
   initialElapsedSeconds: number;
 }) {
   const [elapsedSeconds, setElapsedSeconds] = useState(initialElapsedSeconds);
-  const latestElapsed = useRef(initialElapsedSeconds);
-
-  useEffect(() => {
-    latestElapsed.current = elapsedSeconds;
-  }, [elapsedSeconds]);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -27,9 +22,7 @@ export function Stopwatch({
   useEffect(() => {
     const heartbeat = window.setInterval(() => {
       void fetch(`/api/attempts/${attemptId}/heartbeat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ elapsedSeconds: latestElapsed.current })
+        method: "POST"
       });
     }, 15_000);
 
@@ -39,7 +32,6 @@ export function Stopwatch({
   return (
     <div className="row" aria-live="polite">
       <span className="status-pill">Time {formatElapsed(elapsedSeconds)}</span>
-      <input type="hidden" name="elapsedSeconds" value={elapsedSeconds} readOnly />
     </div>
   );
 }

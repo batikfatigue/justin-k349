@@ -7,6 +7,7 @@ import type { MarkingResult } from "@/lib/domain";
 import { type GeminiGenerate } from "@/lib/marking/gemini";
 import { markAndPersistPartAnswer } from "@/lib/marking/attempt";
 import { normalizePartMarkingSchema } from "@/lib/paper/presentation";
+import { isUuid } from "@/lib/security";
 
 type AttemptRow = typeof attempts.$inferSelect;
 type QuestionRow = typeof questions.$inferSelect;
@@ -19,6 +20,7 @@ export type AiRemarkFailureReason =
   | "part_not_found"
   | "answer_not_found"
   | "part_not_ai"
+  | "manual_override"
   | "marking_failed";
 
 export type AiRemarkResult =
@@ -60,6 +62,10 @@ export async function resubmitAttemptPartToAiMarking(
     now?: Date;
   } = {}
 ): Promise<AiRemarkResult> {
+  if (!isUuid(attemptId) || !isUuid(questionPartId)) {
+    return { ok: false, reason: "attempt_not_found" };
+  }
+
   const db = options.db ?? getDb();
 
   return resubmitAttemptPartToAiMarkingWithRepository(
@@ -103,6 +109,10 @@ export async function resubmitAttemptPartToAiMarkingWithRepository(
     return { ok: false, reason: "answer_not_found" };
   }
 
+  if (answer.markingSource === "manual") {
+    return { ok: false, reason: "manual_override" };
+  }
+
   const markingSchema = normalizePartMarkingSchema({
     label: partWithQuestion.part.label,
     markingSchema: partWithQuestion.part.markingSchema
@@ -112,7 +122,7 @@ export async function resubmitAttemptPartToAiMarkingWithRepository(
     return { ok: false, reason: "part_not_ai" };
   }
 
-  const { markedAt, result } = await repository.markPart({
+  const { markedAt, persisted, result } = await repository.markPart({
     ...partWithQuestion,
     answer,
     attempt,
@@ -121,6 +131,10 @@ export async function resubmitAttemptPartToAiMarkingWithRepository(
       markingSchema
     }
   });
+
+  if (!persisted) {
+    return { ok: false, reason: "manual_override" };
+  }
 
   if (result.status !== "marked") {
     return {
@@ -189,6 +203,7 @@ function createDrizzleAiRemarkRepository(
         generateGemini: options.generateGemini,
         now: options.now,
         part,
+        preserveManualMark: true,
         question
       });
     }

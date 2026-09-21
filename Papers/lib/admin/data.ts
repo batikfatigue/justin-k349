@@ -16,6 +16,7 @@ import {
   moveQuestionCodeStimuliToTargetPart,
   normalizePartMarkingSchema
 } from "@/lib/paper/presentation";
+import { isUuid } from "@/lib/security";
 
 export const ADMIN_ATTEMPTS_PAGE_SIZE = 50;
 
@@ -29,32 +30,33 @@ export async function listAdminAttempts({
   pageSize = ADMIN_ATTEMPTS_PAGE_SIZE
 }: ListAdminAttemptsOptions = {}) {
   const safePageSize = Math.max(1, Math.floor(pageSize));
-  const safePage = Math.max(1, Math.floor(page));
+  const requestedPage = Math.max(1, Math.floor(page));
   const db = getDb();
 
-  const [[{ total }], rows] = await Promise.all([
-    db.select({ total: count() }).from(attempts),
-    db
-      .select({
-        id: attempts.id,
-        paperId: attempts.paperId,
-        paperTitle: papers.title,
-        accessCodeLabel: accessCodes.label,
-        studentName: attempts.studentName,
-        attemptNumber: attempts.attemptNumber,
-        status: attempts.status,
-        startedAt: attempts.startedAt,
-        submittedAt: attempts.submittedAt,
-        lastSeenAt: attempts.lastSeenAt,
-        elapsedSeconds: attempts.elapsedSeconds
-      })
-      .from(attempts)
-      .innerJoin(papers, eq(attempts.paperId, papers.id))
-      .innerJoin(accessCodes, eq(attempts.accessCodeId, accessCodes.id))
-      .orderBy(desc(attempts.startedAt), desc(attempts.id))
-      .limit(safePageSize)
-      .offset((safePage - 1) * safePageSize)
-  ]);
+  const [{ total }] = await db.select({ total: count() }).from(attempts);
+  const totalPages = Math.max(1, Math.ceil(total / safePageSize));
+  const safePage = Math.min(requestedPage, totalPages);
+
+  const rows = await db
+    .select({
+      id: attempts.id,
+      paperId: attempts.paperId,
+      paperTitle: papers.title,
+      accessCodeLabel: accessCodes.label,
+      studentName: attempts.studentName,
+      attemptNumber: attempts.attemptNumber,
+      status: attempts.status,
+      startedAt: attempts.startedAt,
+      submittedAt: attempts.submittedAt,
+      lastSeenAt: attempts.lastSeenAt,
+      elapsedSeconds: attempts.elapsedSeconds
+    })
+    .from(attempts)
+    .innerJoin(papers, eq(attempts.paperId, papers.id))
+    .innerJoin(accessCodes, eq(attempts.accessCodeId, accessCodes.id))
+    .orderBy(desc(attempts.startedAt), desc(attempts.id))
+    .limit(safePageSize)
+    .offset((safePage - 1) * safePageSize);
 
   return {
     attempts: rows.map((row) => ({
@@ -64,11 +66,15 @@ export async function listAdminAttempts({
     page: safePage,
     pageSize: safePageSize,
     total,
-    totalPages: Math.max(1, Math.ceil(total / safePageSize))
+    totalPages
   };
 }
 
 export async function getAdminAttemptDetail(attemptId: string) {
+  if (!isUuid(attemptId)) {
+    return null;
+  }
+
   const [attempt] = await getDb()
     .select({
       id: attempts.id,
