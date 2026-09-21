@@ -15,6 +15,13 @@
       "when": 1782452630832,
       "tag": "0002_add_part_answer_marking_source",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789583700000,
+      "tag": "0003_add_attempts_started_at_index",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, count, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import {
   accessCodes,
@@ -17,30 +17,55 @@ import {
   normalizePartMarkingSchema
 } from "@/lib/paper/presentation";
 
-export async function listAdminAttempts() {
-  const rows = await getDb()
-    .select({
-      id: attempts.id,
-      paperId: attempts.paperId,
-      paperTitle: papers.title,
-      accessCodeLabel: accessCodes.label,
-      studentName: attempts.studentName,
-      attemptNumber: attempts.attemptNumber,
-      status: attempts.status,
-      startedAt: attempts.startedAt,
-      submittedAt: attempts.submittedAt,
-      lastSeenAt: attempts.lastSeenAt,
-      elapsedSeconds: attempts.elapsedSeconds
-    })
-    .from(attempts)
-    .innerJoin(papers, eq(attempts.paperId, papers.id))
-    .innerJoin(accessCodes, eq(attempts.accessCodeId, accessCodes.id))
-    .orderBy(desc(attempts.startedAt));
+export const ADMIN_ATTEMPTS_PAGE_SIZE = 50;
 
-  return rows.map((row) => ({
-    ...row,
-    displayStatus: displayAttemptStatus(row.status, row.lastSeenAt)
-  }));
+export type ListAdminAttemptsOptions = {
+  page?: number;
+  pageSize?: number;
+};
+
+export async function listAdminAttempts({
+  page = 1,
+  pageSize = ADMIN_ATTEMPTS_PAGE_SIZE
+}: ListAdminAttemptsOptions = {}) {
+  const safePageSize = Math.max(1, Math.floor(pageSize));
+  const safePage = Math.max(1, Math.floor(page));
+  const db = getDb();
+
+  const [[{ total }], rows] = await Promise.all([
+    db.select({ total: count() }).from(attempts),
+    db
+      .select({
+        id: attempts.id,
+        paperId: attempts.paperId,
+        paperTitle: papers.title,
+        accessCodeLabel: accessCodes.label,
+        studentName: attempts.studentName,
+        attemptNumber: attempts.attemptNumber,
+        status: attempts.status,
+        startedAt: attempts.startedAt,
+        submittedAt: attempts.submittedAt,
+        lastSeenAt: attempts.lastSeenAt,
+        elapsedSeconds: attempts.elapsedSeconds
+      })
+      .from(attempts)
+      .innerJoin(papers, eq(attempts.paperId, papers.id))
+      .innerJoin(accessCodes, eq(attempts.accessCodeId, accessCodes.id))
+      .orderBy(desc(attempts.startedAt), desc(attempts.id))
+      .limit(safePageSize)
+      .offset((safePage - 1) * safePageSize)
+  ]);
+
+  return {
+    attempts: rows.map((row) => ({
+      ...row,
+      displayStatus: displayAttemptStatus(row.status, row.lastSeenAt)
+    })),
+    page: safePage,
+    pageSize: safePageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / safePageSize))
+  };
 }
 
 export async function getAdminAttemptDetail(attemptId: string) {
