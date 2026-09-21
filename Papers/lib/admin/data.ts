@@ -11,6 +11,11 @@ import {
   questions
 } from "@/lib/db/schema";
 import { displayAttemptStatus } from "@/lib/attempt-status";
+import {
+  displayQuestionTitle,
+  moveQuestionCodeStimuliToTargetPart,
+  normalizePartMarkingSchema
+} from "@/lib/paper/presentation";
 import { isUuid } from "@/lib/security";
 
 export const ADMIN_ATTEMPTS_PAGE_SIZE = 50;
@@ -118,17 +123,31 @@ export async function getAdminAttemptDetail(attemptId: string) {
     },
     questions: questionRows.map((question) => {
       const questionParts = partRows.filter((part) => part.questionId === question.id);
+      const normalizedStimuli = moveQuestionCodeStimuliToTargetPart({
+        questionNumber: question.number,
+        questionStimulus: question.stimulus,
+        parts: questionParts.map((part) => ({
+          id: part.id,
+          label: part.label,
+          prompt: part.prompt,
+          stimulus: part.stimulus
+        }))
+      });
+
       return {
         ...question,
-        stimulus: question.stimulus,
-        title: question.title,
+        stimulus: normalizedStimuli.questionStimulus,
+        title: displayQuestionTitle(question.title),
         parts: questionParts.map((part) => {
-          const markingSchema = part.markingSchema;
+          const markingSchema = normalizePartMarkingSchema({
+            label: part.label,
+            markingSchema: part.markingSchema
+          });
           const answer = answersByPartId.get(part.id) ?? null;
 
           return {
             ...part,
-            stimulus: part.stimulus,
+            stimulus: normalizedStimuli.partStimulusById.get(part.id) ?? part.stimulus,
             markingSchema,
             answer,
             canResubmitAiMark:

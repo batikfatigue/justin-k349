@@ -172,7 +172,6 @@ export const attempts = pgTable(
       .references(() => accessCodes.id, { onDelete: "restrict" }),
     studentName: text("student_name").notNull(),
     normalizedStudentName: text("normalized_student_name").notNull(),
-    sessionToken: text("session_token"),
     attemptNumber: integer("attempt_number").notNull(),
     status: text("status").notNull().default("in_progress"),
     startedAt: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),

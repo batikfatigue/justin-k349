@@ -137,7 +137,6 @@ const session: StudentSession = {
   accessCodeId: "access-1",
   studentName: "Ada Lovelace",
   normalizedStudentName: "ada lovelace",
-  sessionToken: "session-token-1",
   expiresAt: Date.now() + 60_000
 };
 
@@ -148,7 +147,6 @@ const attemptRow = {
   accessCodeId: session.accessCodeId,
   studentName: session.studentName,
   normalizedStudentName: session.normalizedStudentName,
-  sessionToken: session.sessionToken,
   attemptNumber: 1,
   status: "in_progress",
   startedAt: new Date("2026-06-29T00:00:00.000Z"),

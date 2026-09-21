@@ -129,12 +129,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "session_token": {
-          "name": "session_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "attempt_number": {
           "name": "attempt_number",
           "type": "integer",

@@ -1,5 +1,4 @@
 ALTER TABLE "part_answers" ALTER COLUMN "score" SET DATA TYPE double precision;--> statement-breakpoint
-ALTER TABLE "attempts" ADD COLUMN "session_token" text;--> statement-breakpoint
 WITH dup AS (
   SELECT "id", "paper_id", "access_code_id", "normalized_student_name",
          ROW_NUMBER() OVER (PARTITION BY "paper_id", "access_code_id", "normalized_student_name", "attempt_number" ORDER BY "started_at", "id") AS "dup_rn",

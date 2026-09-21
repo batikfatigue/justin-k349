@@ -1,6 +1,5 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getEnv } from "@/lib/env";
@@ -27,7 +26,6 @@ export type StudentSession = {
   accessCodeId: string;
   studentName: string;
   normalizedStudentName: string;
-  sessionToken: string;
   expiresAt: number;
 };
 
@@ -108,7 +106,6 @@ export function setStudentSession(accessCodeId: string, studentName: string) {
     accessCodeId,
     studentName: trimmedName,
     normalizedStudentName: normalizeStudentName(trimmedName),
-    sessionToken: randomUUID(),
     expiresAt: Date.now() + sixHours * 1000
   };
 
@@ -128,16 +125,7 @@ export function clearStudentSession() {
 export function getStudentSession() {
   const session = decode<StudentSession>(cookies().get(studentCookieName)?.value);
 
-  if (
-    !isFresh(session) ||
-    session?.kind !== "student" ||
-    typeof session.sessionToken !== "string" ||
-    session.sessionToken.length === 0
-  ) {
-    return null;
-  }
-
-  return session;
+  return isFresh(session) && session?.kind === "student" ? session : null;
 }
 
 export function requireStudentSession() {
