@@ -185,7 +185,8 @@ export const attempts = pgTable(
       table.normalizedStudentName
     ),
     statusIdx: index("attempts_status_idx").on(table.status),
-    lastSeenIdx: index("attempts_last_seen_idx").on(table.lastSeenAt)
+    lastSeenIdx: index("attempts_last_seen_idx").on(table.lastSeenAt),
+    startedAtIdx: index("attempts_started_at_idx").on(table.startedAt.desc(), table.id.desc())
   })
 );
 
