@@ -5,7 +5,6 @@ import { partAnswers, questionParts, questions } from "@/lib/db/schema";
 import type { MarkingResult, MarkingSource, StudentAnswer } from "@/lib/domain";
 import { type GeminiGenerate } from "@/lib/marking/gemini";
 import { markPartAnswer, type MarkablePart } from "@/lib/marking/mark";
-import { normalizePartMarkingSchema } from "@/lib/paper/presentation";
 
 type QuestionRow = typeof questions.$inferSelect;
 type QuestionPartRow = typeof questionParts.$inferSelect;
@@ -32,10 +31,7 @@ export function buildMarkablePart(question: QuestionRow, part: QuestionPartRow):
     prompt: part.prompt,
     marks: part.marks,
     stimulus: [...(question.stimulus ?? []), ...(part.stimulus ?? [])],
-    markingSchema: normalizePartMarkingSchema({
-      label: part.label,
-      markingSchema: part.markingSchema
-    })
+    markingSchema: part.markingSchema
   };
 }
 

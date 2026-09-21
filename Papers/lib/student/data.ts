@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, eq, inArray, max, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, max, or, sql } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { getDb, type Db } from "@/lib/db/client";
 import {
@@ -17,11 +17,6 @@ import {
   buildPartAnswerMarkFields,
   markAndPersistPartAnswer
 } from "@/lib/marking/attempt";
-import {
-  displayQuestionTitle,
-  moveQuestionCodeStimuliToTargetPart,
-  normalizeChoicePart
-} from "@/lib/paper/presentation";
 import { hashAccessCode, isUuid } from "@/lib/security";
 import type { StudentSession } from "@/lib/auth/session";
 
@@ -170,6 +165,7 @@ export async function createStudentAttempt(paperId: string, session: StudentSess
             accessCodeId: session.accessCodeId,
             studentName: session.studentName,
             normalizedStudentName: session.normalizedStudentName,
+            sessionToken: session.sessionToken,
             attemptNumber: (attemptAggregate?.latestAttempt ?? 0) + 1,
             status: "in_progress",
             elapsedSeconds: 0
@@ -201,7 +197,8 @@ export async function getStudentAttempt(attemptId: string, session: StudentSessi
       and(
         eq(attempts.id, attemptId),
         eq(attempts.accessCodeId, session.accessCodeId),
-        eq(attempts.normalizedStudentName, session.normalizedStudentName)
+        eq(attempts.normalizedStudentName, session.normalizedStudentName),
+        or(isNull(attempts.sessionToken), eq(attempts.sessionToken, session.sessionToken))
       )
     );
 
@@ -256,16 +253,6 @@ export async function getStudentQuestion(attemptId: string, questionNumber: numb
           )
       : [];
   const answerByPartId = new Map(savedAnswers.map((answer) => [answer.questionPartId, answer]));
-  const normalizedStimuli = moveQuestionCodeStimuliToTargetPart({
-    questionNumber: question.number,
-    questionStimulus: question.stimulus,
-    parts: parts.map((part) => ({
-      id: part.id,
-      label: part.label,
-      prompt: part.prompt,
-      stimulus: part.stimulus
-    }))
-  });
 
   return {
     attempt,
@@ -273,31 +260,22 @@ export async function getStudentQuestion(attemptId: string, questionNumber: numb
     question: {
       id: question.id,
       number: question.number,
-      title: displayQuestionTitle(question.title),
+      title: question.title,
       marks: question.marks,
-      stimulus: normalizedStimuli.questionStimulus,
+      stimulus: question.stimulus,
       position: question.position
     },
-    parts: parts.map((part) => {
-      const partStimulus = normalizedStimuli.partStimulusById.get(part.id) ?? part.stimulus;
-      const normalizedPart = normalizeChoicePart({
-        prompt: part.prompt,
-        stimulus: partStimulus,
-        responseSchema: part.responseSchema
-      });
-
-      return {
-        id: part.id,
-        label: part.label,
-        type: part.type,
-        prompt: part.prompt,
-        marks: part.marks,
-        stimulus: normalizedPart.stimulus,
-        responseSchema: normalizedPart.responseSchema,
-        studentFeedbackPolicy: part.studentFeedbackPolicy,
-        answer: answerByPartId.get(part.id)?.answer ?? defaultAnswer(normalizedPart.responseSchema)
-      };
-    }),
+    parts: parts.map((part) => ({
+      id: part.id,
+      label: part.label,
+      type: part.type,
+      prompt: part.prompt,
+      marks: part.marks,
+      stimulus: part.stimulus,
+      responseSchema: part.responseSchema,
+      studentFeedbackPolicy: part.studentFeedbackPolicy,
+      answer: answerByPartId.get(part.id)?.answer ?? defaultAnswer(part.responseSchema)
+    })),
     questionNumber,
     questionCount: allQuestions.length
   };
@@ -570,6 +548,7 @@ async function updateStudentAttemptProgress(
         eq(attempts.id, attempt.id),
         eq(attempts.accessCodeId, session.accessCodeId),
         eq(attempts.normalizedStudentName, session.normalizedStudentName),
+        or(isNull(attempts.sessionToken), eq(attempts.sessionToken, session.sessionToken)),
         eq(attempts.status, "in_progress")
       )
     )

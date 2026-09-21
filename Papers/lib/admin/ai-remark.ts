@@ -6,7 +6,6 @@ import { attempts, partAnswers, questionParts, questions } from "@/lib/db/schema
 import type { MarkingResult } from "@/lib/domain";
 import { type GeminiGenerate } from "@/lib/marking/gemini";
 import { markAndPersistPartAnswer } from "@/lib/marking/attempt";
-import { normalizePartMarkingSchema } from "@/lib/paper/presentation";
 import { isUuid } from "@/lib/security";
 
 type AttemptRow = typeof attempts.$inferSelect;
@@ -113,10 +112,7 @@ export async function resubmitAttemptPartToAiMarkingWithRepository(
     return { ok: false, reason: "manual_override" };
   }
 
-  const markingSchema = normalizePartMarkingSchema({
-    label: partWithQuestion.part.label,
-    markingSchema: partWithQuestion.part.markingSchema
-  });
+  const markingSchema = partWithQuestion.part.markingSchema;
 
   if (markingSchema.mode !== "rubric_ai") {
     return { ok: false, reason: "part_not_ai" };
