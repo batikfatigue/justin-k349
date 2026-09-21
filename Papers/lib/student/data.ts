@@ -22,6 +22,28 @@ import {
 import { hashAccessCode } from "@/lib/security";
 import type { StudentSession } from "@/lib/auth/session";
 
+const SUBMIT_MARKING_CONCURRENCY = 5;
+
+async function runWithConcurrency<T, R>(
+  items: readonly T[],
+  limit: number,
+  task: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      results[index] = await task(items[index]);
+    }
+  });
+
+  await Promise.all(workers);
+
+  return results;
+}
+
 export async function resolveAccessCode(code: string) {
   const [accessCode] = await getDb()
     .select()
@@ -317,17 +339,17 @@ export async function submitStudentAttempt(
   const questionById = new Map(allQuestions.map((question) => [question.id, question]));
   const now = new Date();
 
-  for (const part of allParts) {
+  const markablePartsWithQuestions = allParts.flatMap((part) => {
     const question = questionById.get(part.questionId);
 
-    if (!question) {
-      continue;
-    }
+    return question ? [{ part, question }] : [];
+  });
 
+  await runWithConcurrency(markablePartsWithQuestions, SUBMIT_MARKING_CONCURRENCY, ({ part, question }) => {
     const savedAnswer = answerByPartId.get(part.id);
     const answer = savedAnswer?.answer ?? defaultAnswer(part.responseSchema);
 
-    await markAndPersistPartAnswer({
+    return markAndPersistPartAnswer({
       answer,
       attemptId,
       db,
@@ -335,7 +357,7 @@ export async function submitStudentAttempt(
       part,
       question
     });
-  }
+  });
 
   const [submitted] = await db
     .update(attempts)
