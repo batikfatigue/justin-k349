@@ -87,7 +87,7 @@ function parsePage(value: string | string[] | undefined) {
 }
 
 function pageHref(page: number) {
-  return page === 1 ? "/admin/attempts" : `/admin/attempts?page=${page}`;
+  return { pathname: "/admin/attempts" as const, query: page === 1 ? {} : { page: String(page) } };
 }
 
 function formatDate(date: Date) {
