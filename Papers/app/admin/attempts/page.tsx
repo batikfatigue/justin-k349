@@ -3,9 +3,18 @@ import { AdminNav } from "@/components/admin/AdminNav";
 import { requireTutorSession } from "@/lib/auth/session";
 import { listAdminAttempts } from "@/lib/admin/data";
 
-export default async function AdminAttemptsPage() {
+type AdminAttemptsPageProps = {
+  searchParams?: Record<string, string | string[] | undefined>;
+};
+
+export default async function AdminAttemptsPage({ searchParams = {} }: AdminAttemptsPageProps) {
   requireTutorSession();
-  const attempts = await listAdminAttempts();
+  const requestedPage = parsePage(searchParams.page);
+  const { attempts, page, pageSize, total, totalPages } = await listAdminAttempts({
+    page: requestedPage
+  });
+  const firstRow = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const lastRow = Math.min(page * pageSize, total);
 
   return (
     <main className="section">
@@ -51,9 +60,34 @@ export default async function AdminAttemptsPage() {
             ))}
           </tbody>
         </table>
+        <nav className="row" aria-label="Attempts pagination">
+          <p className="meta">
+            Showing {firstRow}–{lastRow} of {total} attempts (page {page} of {totalPages})
+          </p>
+          {page > 1 ? (
+            <Link className="button secondary" href={pageHref(page - 1)}>
+              Previous
+            </Link>
+          ) : null}
+          {page < totalPages ? (
+            <Link className="button secondary" href={pageHref(page + 1)}>
+              Next
+            </Link>
+          ) : null}
+        </nav>
       </div>
     </main>
   );
+}
+
+function parsePage(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(raw ?? "", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function pageHref(page: number) {
+  return page === 1 ? "/admin/attempts" : `/admin/attempts?page=${page}`;
 }
 
 function formatDate(date: Date) {
