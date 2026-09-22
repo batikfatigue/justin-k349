@@ -1,10 +1,10 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AnswerControls } from "@/components/student/AnswerControls";
 import { PromptText } from "@/components/student/PromptText";
 import { QuestionNavigationControls } from "@/components/student/QuestionNavigationControls";
 import { StimulusRenderer } from "@/components/student/StimulusRenderer";
 import { Stopwatch } from "@/components/student/Stopwatch";
-import { requireStudentSession } from "@/lib/auth/session";
+import { peekStudentSession, requireStudentSession } from "@/lib/auth/session";
 import { saveQuestionAction } from "@/lib/student/actions";
 import { getStudentQuestion } from "@/lib/student/data";
 
@@ -19,8 +19,26 @@ export default async function AttemptQuestionPage({
     notFound();
   }
 
-  const session = requireStudentSession();
-  const data = await getStudentQuestion(params.attemptId, questionNumber, session);
+  const cookieSession = peekStudentSession();
+
+  if (!cookieSession) {
+    redirect("/");
+  }
+
+  // Overlap the access-code validity check with the question load; the check's outcome still wins.
+  const [, loaded] = await Promise.all([
+    requireStudentSession(),
+    getStudentQuestion(params.attemptId, questionNumber, cookieSession).then(
+      (data) => ({ data, error: null }),
+      (error: unknown) => ({ data: null, error })
+    )
+  ]);
+
+  if (!loaded.data) {
+    throw loaded.error;
+  }
+
+  const data = loaded.data;
 
   return (
     <main className="section">

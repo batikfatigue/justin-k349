@@ -1,6 +1,7 @@
 import "server-only";
 
-import { and, asc, eq, inArray, max, sql } from "drizzle-orm";
+import { and, asc, eq, max, sql, type SQL } from "drizzle-orm";
+import { alias, type PgColumn } from "drizzle-orm/pg-core";
 import { notFound } from "next/navigation";
 import { getDb, type Db } from "@/lib/db/client";
 import {
@@ -20,7 +21,7 @@ import {
   normalizeChoicePart
 } from "@/lib/paper/presentation";
 import { hashAccessCode } from "@/lib/security";
-import type { StudentSession } from "@/lib/auth/session";
+import { requireStudentSession, type StudentSession } from "@/lib/auth/session";
 
 const SUBMIT_MARKING_CONCURRENCY = 5;
 
@@ -159,43 +160,50 @@ export async function getStudentQuestion(attemptId: string, questionNumber: numb
     notFound();
   }
 
-  const [paper] = await getDb()
-    .select({
-      id: papers.id,
-      title: papers.title,
-      syllabus: papers.syllabus,
-      totalMarks: papers.totalMarks
-    })
-    .from(papers)
-    .where(eq(papers.id, attempt.paperId));
-
-  const allQuestions = await getDb()
-    .select()
-    .from(questions)
-    .where(eq(questions.paperVersionId, attempt.paperVersionId))
-    .orderBy(asc(questions.position));
+  const db = getDb();
+  const nthQuestionId = nthQuestionIdForVersion(attempt.paperVersionId, questionNumber);
+  const [[paper], allQuestions, parts, savedAnswers] = await Promise.all([
+    db
+      .select({
+        id: papers.id,
+        title: papers.title,
+        syllabus: papers.syllabus,
+        totalMarks: papers.totalMarks
+      })
+      .from(papers)
+      .where(eq(papers.id, attempt.paperId)),
+    db
+      .select()
+      .from(questions)
+      .where(eq(questions.paperVersionId, attempt.paperVersionId))
+      .orderBy(asc(questions.position)),
+    db
+      .select()
+      .from(questionParts)
+      .where(
+        and(
+          eq(questionParts.paperVersionId, attempt.paperVersionId),
+          eq(questionParts.questionId, nthQuestionId)
+        )
+      )
+      .orderBy(asc(questionParts.position)),
+    db
+      .select()
+      .from(partAnswers)
+      .where(and(eq(partAnswers.attemptId, attempt.id), eq(partAnswers.questionId, nthQuestionId)))
+  ]);
   const question = allQuestions[questionNumber - 1];
 
   if (!question) {
     notFound();
   }
 
-  const parts = await getDb()
-    .select()
-    .from(questionParts)
-    .where(eq(questionParts.questionId, question.id))
-    .orderBy(asc(questionParts.position));
-  const partIds = parts.map((part) => part.id);
-  const savedAnswers =
-    partIds.length > 0
-      ? await getDb()
-          .select()
-          .from(partAnswers)
-          .where(
-            and(eq(partAnswers.attemptId, attempt.id), inArray(partAnswers.questionPartId, partIds))
-          )
-      : [];
-  const answerByPartId = new Map(savedAnswers.map((answer) => [answer.questionPartId, answer]));
+  const partIds = new Set(parts.map((part) => part.id));
+  const answerByPartId = new Map(
+    savedAnswers
+      .filter((answer) => partIds.has(answer.questionPartId))
+      .map((answer) => [answer.questionPartId, answer])
+  );
   const normalizedStimuli = moveQuestionCodeStimuliToTargetPart({
     questionNumber: question.number,
     questionStimulus: question.stimulus,
@@ -269,34 +277,32 @@ export async function saveQuestionAnswers(
     updatedAt: now
   }));
 
-  if (answerRows.length > 0) {
-    await db
-      .insert(partAnswers)
-      .values(answerRows)
-      .onConflictDoUpdate({
-        target: [partAnswers.attemptId, partAnswers.questionPartId],
-        set: {
-          answer: sql`excluded.answer`,
-          markingStatus: "pending",
-          markingSource: "auto",
-          score: null,
-          studentFeedback: null,
-          tutorRationale: null,
-          missingRubricPoints: [],
-          exactMarkingDetails: null,
-          markedAt: null,
-          updatedAt: now
-        }
-      });
-  }
+  const upsertAnswers =
+    answerRows.length > 0
+      ? db
+          .insert(partAnswers)
+          .values(answerRows)
+          .onConflictDoUpdate({
+            target: [partAnswers.attemptId, partAnswers.questionPartId],
+            set: {
+              answer: sql`excluded.answer`,
+              markingStatus: "pending",
+              markingSource: "auto",
+              score: null,
+              studentFeedback: null,
+              tutorRationale: null,
+              missingRubricPoints: [],
+              exactMarkingDetails: null,
+              markedAt: null,
+              updatedAt: now
+            }
+          })
+      : Promise.resolve();
 
-  await updateStudentAttemptProgress(
-    db,
-    attemptId,
-    session,
-    Number(formData.get("elapsedSeconds") ?? 0),
-    now
-  );
+  await Promise.all([
+    upsertAnswers,
+    updateStudentAttemptProgress(db, attemptId, session, Number(formData.get("elapsedSeconds") ?? 0), now)
+  ]);
 
   return safeQuestion;
 }
@@ -454,6 +460,12 @@ function parseAnswer(formData: FormData, partId: string, responseSchema: Respons
   };
 }
 
+function nthQuestionIdForVersion(paperVersionId: PgColumn | string, questionNumber: number): SQL {
+  const nth = alias(questions, "nth_question");
+
+  return sql`(select ${nth.id} from ${questions} as ${nth} where ${nth.paperVersionId} = ${paperVersionId} order by ${nth.position} asc limit 1 offset ${questionNumber - 1})`;
+}
+
 async function getStudentQuestionForSave(
   attemptId: string,
   questionNumber: number,
@@ -464,9 +476,24 @@ async function getStudentQuestionForSave(
     notFound();
   }
 
-  const [attempt] = await db
-    .select()
+  const rows = await db
+    .select({ attempt: attempts, question: questions, part: questionParts })
     .from(attempts)
+    .innerJoin(accessCodes, and(eq(accessCodes.id, attempts.accessCodeId), eq(accessCodes.active, true)))
+    .innerJoin(
+      questions,
+      and(
+        eq(questions.paperVersionId, attempts.paperVersionId),
+        eq(questions.id, nthQuestionIdForVersion(attempts.paperVersionId, questionNumber))
+      )
+    )
+    .leftJoin(
+      questionParts,
+      and(
+        eq(questionParts.paperVersionId, attempts.paperVersionId),
+        eq(questionParts.questionId, questions.id)
+      )
+    )
     .where(
       and(
         eq(attempts.id, attemptId),
@@ -474,39 +501,20 @@ async function getStudentQuestionForSave(
         eq(attempts.normalizedStudentName, session.normalizedStudentName),
         eq(attempts.status, "in_progress")
       )
-    );
-
-  if (!attempt) {
-    notFound();
-  }
-
-  const [question] = await db
-    .select()
-    .from(questions)
-    .where(eq(questions.paperVersionId, attempt.paperVersionId))
-    .orderBy(asc(questions.position))
-    .limit(1)
-    .offset(questionNumber - 1);
-
-  if (!question) {
-    notFound();
-  }
-
-  const parts = await db
-    .select()
-    .from(questionParts)
-    .where(
-      and(
-        eq(questionParts.paperVersionId, attempt.paperVersionId),
-        eq(questionParts.questionId, question.id)
-      )
     )
     .orderBy(asc(questionParts.position));
 
+  const [first] = rows;
+
+  if (!first) {
+    await requireStudentSession();
+    notFound();
+  }
+
   return {
-    attempt,
-    question,
-    parts,
+    attempt: first.attempt,
+    question: first.question,
+    parts: rows.flatMap((row) => (row.part ? [row.part] : [])),
     questionNumber
   };
 }

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import {
   clearStudentSession,
+  peekStudentSession,
   requireStudentSession,
   setStudentSession
 } from "@/lib/auth/session";
@@ -52,7 +53,12 @@ export async function startAttemptAction(formData: FormData) {
 }
 
 export async function saveQuestionAction(formData: FormData) {
-  const session = await requireStudentSession();
+  const session = peekStudentSession();
+
+  if (!session) {
+    redirect("/");
+  }
+
   const attemptId = String(formData.get("attemptId") ?? "");
   const questionNumber = Number(formData.get("questionNumber") ?? 1);
   const questionCount = Number(formData.get("questionCount") ?? 1);

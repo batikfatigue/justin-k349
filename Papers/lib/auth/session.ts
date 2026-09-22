@@ -119,10 +119,16 @@ export function clearStudentSession() {
   cookies().delete(studentCookieName);
 }
 
-export async function getStudentSession() {
+export function peekStudentSession() {
   const session = decode<StudentSession>(cookies().get(studentCookieName)?.value);
 
-  if (!isFresh(session) || session?.kind !== "student") {
+  return isFresh(session) && session?.kind === "student" ? session : null;
+}
+
+export async function getStudentSession() {
+  const session = peekStudentSession();
+
+  if (!session) {
     return null;
   }
 
