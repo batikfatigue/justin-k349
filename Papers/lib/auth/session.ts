@@ -2,7 +2,11 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { signValue, verifySignedValue, normalizeStudentName } from "@/lib/security";
+import { and, eq } from "drizzle-orm";
+import { getDb } from "@/lib/db/client";
+import { accessCodes } from "@/lib/db/schema";
+import { getEnv } from "@/lib/env";
+import { hmac, signValue, verifySignedValue, normalizeStudentName } from "@/lib/security";
 
 const tutorCookieName = "tutor_session";
 const studentCookieName = "student_access";
@@ -11,6 +15,7 @@ const oneDay = 24 * 60 * 60;
 
 type TutorSession = {
   kind: "tutor";
+  credentialFingerprint: string;
   expiresAt: number;
 };
 
@@ -44,9 +49,15 @@ function isFresh(payload: { expiresAt: number } | null) {
   return Boolean(payload && payload.expiresAt > Date.now());
 }
 
+function currentTutorCredentialFingerprint() {
+  const configuredHash = getEnv().TUTOR_PASSWORD_HASH;
+  return configuredHash ? hmac(`tutor-credential:${configuredHash}`) : null;
+}
+
 export function setTutorSession() {
   const payload: TutorSession = {
     kind: "tutor",
+    credentialFingerprint: currentTutorCredentialFingerprint() ?? "",
     expiresAt: Date.now() + oneDay * 1000
   };
 
@@ -65,7 +76,14 @@ export function clearTutorSession() {
 
 export function getTutorSession() {
   const session = decode<TutorSession>(cookies().get(tutorCookieName)?.value);
-  return isFresh(session) && session?.kind === "tutor" ? session : null;
+  const fingerprint = currentTutorCredentialFingerprint();
+  const valid =
+    isFresh(session) &&
+    session?.kind === "tutor" &&
+    Boolean(fingerprint) &&
+    session.credentialFingerprint === fingerprint;
+
+  return valid ? session : null;
 }
 
 export function requireTutorSession() {
@@ -101,13 +119,23 @@ export function clearStudentSession() {
   cookies().delete(studentCookieName);
 }
 
-export function getStudentSession() {
+export async function getStudentSession() {
   const session = decode<StudentSession>(cookies().get(studentCookieName)?.value);
-  return isFresh(session) && session?.kind === "student" ? session : null;
+
+  if (!isFresh(session) || session?.kind !== "student") {
+    return null;
+  }
+
+  const [accessCode] = await getDb()
+    .select({ id: accessCodes.id })
+    .from(accessCodes)
+    .where(and(eq(accessCodes.id, session.accessCodeId), eq(accessCodes.active, true)));
+
+  return accessCode ? session : null;
 }
 
-export function requireStudentSession() {
-  const session = getStudentSession();
+export async function requireStudentSession() {
+  const session = await getStudentSession();
 
   if (!session) {
     redirect("/");

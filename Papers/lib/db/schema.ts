@@ -190,6 +190,14 @@ export const attempts = pgTable(
   })
 );
 
+export const authAttempts = pgTable("auth_attempts", {
+  key: text("key").primaryKey(),
+  failureCount: integer("failure_count").notNull().default(0),
+  windowStartedAt: timestamp("window_started_at", { withTimezone: true }).notNull(),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
+});
+
 export const partAnswers = pgTable(
   "part_answers",
   {

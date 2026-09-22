@@ -8,14 +8,16 @@ export default async function HomePage({
 }: {
   searchParams: { error?: string };
 }) {
-  const session = getStudentSession();
+  const session = await getStudentSession();
   const papers = session ? await getPublishedPapersForStudent(session.accessCodeId) : [];
   const error =
     searchParams.error === "access"
       ? "That access code is not active."
       : searchParams.error === "name"
         ? "Enter your name before opening papers."
-        : null;
+        : searchParams.error === "throttled"
+          ? "Too many attempts. Try again later."
+          : null;
 
   return (
     <main className="section">

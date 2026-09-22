@@ -6,7 +6,7 @@ export async function POST(
   request: Request,
   { params }: { params: { attemptId: string } }
 ) {
-  const session = getStudentSession();
+  const session = await getStudentSession();
 
   if (!session) {
     return NextResponse.json({ ok: false }, { status: 401 });

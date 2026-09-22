@@ -6,6 +6,7 @@ import {
   requireStudentSession,
   setStudentSession
 } from "@/lib/auth/session";
+import { clearFailures, isThrottled, recordFailure } from "@/lib/auth/throttle";
 import {
   createStudentAttempt,
   resolveAccessCode,
@@ -14,6 +15,10 @@ import {
 } from "@/lib/student/data";
 
 export async function enterStudentAccessAction(formData: FormData) {
+  if (await isThrottled("access-code")) {
+    redirect("/?error=throttled");
+  }
+
   const accessCode = String(formData.get("accessCode") ?? "");
   const studentName = String(formData.get("studentName") ?? "").trim();
 
@@ -24,9 +29,11 @@ export async function enterStudentAccessAction(formData: FormData) {
   const code = await resolveAccessCode(accessCode);
 
   if (!code) {
+    await recordFailure("access-code");
     redirect("/?error=access");
   }
 
+  await clearFailures("access-code");
   setStudentSession(code.id, studentName);
   redirect("/");
 }
@@ -37,7 +44,7 @@ export async function clearStudentAccessAction() {
 }
 
 export async function startAttemptAction(formData: FormData) {
-  const session = requireStudentSession();
+  const session = await requireStudentSession();
   const paperId = String(formData.get("paperId") ?? "");
   const attempt = await createStudentAttempt(paperId, session);
 
@@ -45,7 +52,7 @@ export async function startAttemptAction(formData: FormData) {
 }
 
 export async function saveQuestionAction(formData: FormData) {
-  const session = requireStudentSession();
+  const session = await requireStudentSession();
   const attemptId = String(formData.get("attemptId") ?? "");
   const questionNumber = Number(formData.get("questionNumber") ?? 1);
   const questionCount = Number(formData.get("questionCount") ?? 1);

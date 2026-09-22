@@ -3,7 +3,7 @@ import { requireStudentSession } from "@/lib/auth/session";
 import { getStudentResults } from "@/lib/student/data";
 
 export default async function ResultsPage({ params }: { params: { attemptId: string } }) {
-  const session = requireStudentSession();
+  const session = await requireStudentSession();
   const results = await getStudentResults(params.attemptId, session);
 
   return (

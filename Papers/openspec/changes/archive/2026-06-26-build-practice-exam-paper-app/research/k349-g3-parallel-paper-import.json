@@ -33,7 +33,7 @@
           "id": "q1a",
           "label": "1(a)",
           "type": "multiple_choice",
-          "prompt": "Tick all applicable boxes to identify the stages included in the simplified sprint cycle taught for this paper.",
+          "prompt": "Identify all of the stages in a traditional 'waterfall' development model.",
           "marks": 1,
           "response": {
             "kind": "multiple_choice",

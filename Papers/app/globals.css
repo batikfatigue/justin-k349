@@ -416,6 +416,87 @@ button.secondary.danger {
   line-height: 1.5;
 }
 
+.code-editor-field {
+  display: grid;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+.code-editor {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--background);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.5;
+  tab-size: 4;
+}
+
+.code-editor:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.code-editor-gutter {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-width: 2.5rem;
+  padding: 0.7rem 0.5rem;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  text-align: right;
+  overflow: hidden;
+  user-select: none;
+}
+
+.code-editor textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 0.7rem 2.5rem 0.7rem 0.8rem;
+  font: inherit;
+  line-height: inherit;
+  tab-size: 4;
+  white-space: pre;
+  overflow: auto;
+  resize: vertical;
+}
+
+.code-editor textarea:focus-visible {
+  outline: none;
+}
+
+.code-editor-open {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: var(--radius);
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.code-editor-open:hover {
+  color: var(--foreground);
+  background: var(--surface-strong);
+}
+
 .flowchart {
   overflow-x: auto;
   padding: var(--space-2) 0;

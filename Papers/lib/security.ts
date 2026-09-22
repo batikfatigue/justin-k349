@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { requireEnv } from "@/lib/env";
 
-function hmac(value: string) {
+export function hmac(value: string) {
   return createHmac("sha256", requireEnv("SESSION_SECRET")).update(value).digest("base64url");
 }
 

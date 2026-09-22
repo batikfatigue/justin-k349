@@ -5,7 +5,7 @@ import { startAttemptAction } from "@/lib/student/actions";
 import { getStudentPaperIntro } from "@/lib/student/data";
 
 export default async function PaperIntroPage({ params }: { params: { paperId: string } }) {
-  const session = requireStudentSession();
+  const session = await requireStudentSession();
   const paper = await getStudentPaperIntro(params.paperId, session);
 
   if (!paper) {

@@ -1,0 +1,1110 @@
+{
+  "schemaVersion": "1.0",
+  "paperId": "k349-g3-ch1-ch2-practice",
+  "title": "K349 G3 Computing Practice Paper: Computer Architecture and Data Representation",
+  "syllabus": "K349 G3 Computing",
+  "mode": "practice",
+  "status": "draft",
+  "totalMarks": 50,
+  "accessCodes": [
+    {
+      "code": "G3CH12",
+      "label": "G3 Computing"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "number": "1",
+      "title": "Units of Data",
+      "marks": 5,
+      "outcomeId": "1.1.1",
+      "stimulus": [
+        {
+          "type": "text",
+          "text": "1 kB = 1,000 bytes and 1 KiB = 1,024 bytes. The same pattern applies to MB/MiB, GB/GiB, TB/TiB and PB/PiB. 1 byte = 8 bits."
+        }
+      ],
+      "parts": [
+        {
+          "id": "q1a",
+          "label": "1(a)",
+          "type": "single_choice",
+          "prompt": "Which option lists the units in increasing order of size?",
+          "marks": 1,
+          "difficulty": "easy",
+          "response": {
+            "kind": "single_choice",
+            "options": [
+              {
+                "value": "A",
+                "label": "bit, byte, kilobyte, kibibyte, megabyte, gibibyte"
+              },
+              {
+                "value": "B",
+                "label": "bit, byte, kibibyte, kilobyte, megabyte, gibibyte"
+              },
+              {
+                "value": "C",
+                "label": "byte, bit, kilobyte, kibibyte, gibibyte, megabyte"
+              },
+              {
+                "value": "D",
+                "label": "bit, byte, kilobyte, kibibyte, gibibyte, megabyte"
+              }
+            ]
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "A"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q1b",
+          "label": "1(b)",
+          "type": "short_text",
+          "prompt": "Calculate the number of bytes in 3 GiB.",
+          "marks": 1,
+          "difficulty": "standard",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "3221225472",
+              "3,221,225,472",
+              "3 221 225 472",
+              "3221225472 bytes",
+              "3,221,225,472 bytes"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q1c",
+          "label": "1(c)",
+          "type": "short_text",
+          "prompt": "Calculate the number of bits (not bytes) in 0.5 MB.",
+          "marks": 1,
+          "difficulty": "standard",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "4000000",
+              "4,000,000",
+              "4 000 000",
+              "4000000 bits",
+              "4,000,000 bits"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q1d",
+          "label": "1(d)",
+          "type": "short_text",
+          "prompt": "Each address in memory refers to one byte. Calculate the number of addresses needed for 32 KiB of memory.",
+          "marks": 1,
+          "difficulty": "standard",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "32768",
+              "32,768",
+              "32 768",
+              "32768 addresses",
+              "32,768 addresses"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q1e",
+          "label": "1(e)",
+          "type": "short_text",
+          "prompt": "A computer's memory has 512 possible addresses. Calculate the total size of its memory in bits.",
+          "marks": 1,
+          "difficulty": "challenging",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "4096",
+              "4,096",
+              "4 096",
+              "4096 bits",
+              "4,096 bits"
+            ],
+            "caseSensitive": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "number": "2",
+      "title": "Processor, Memory and Buses",
+      "marks": 10,
+      "outcomeId": "1.1.2",
+      "parts": [
+        {
+          "id": "q2a",
+          "label": "2(a)",
+          "type": "multiple_choice",
+          "prompt": "Select ALL the statements that are true.",
+          "marks": 1,
+          "outcomeId": "1.1.2",
+          "difficulty": "standard",
+          "response": {
+            "kind": "multiple_choice",
+            "options": [
+              {
+                "value": "A",
+                "label": "Main memory (RAM) is volatile."
+              },
+              {
+                "value": "B",
+                "label": "Secondary storage usually has a lower cost per GB than main memory."
+              },
+              {
+                "value": "C",
+                "label": "The processor usually accesses data in secondary storage directly, without copying it to main memory first."
+              },
+              {
+                "value": "D",
+                "label": "Main memory usually has a larger capacity than secondary storage."
+              },
+              {
+                "value": "E",
+                "label": "Data in secondary storage is retained when the computer is switched off."
+              }
+            ]
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "A;B;E"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q2b",
+          "label": "2(b)",
+          "type": "structured_response",
+          "prompt": "A student's laptop slows down a lot when many applications are open at the same time. Explain why adding more main memory is likely to improve its performance.",
+          "marks": 2,
+          "outcomeId": "1.1.2",
+          "difficulty": "standard",
+          "response": {
+            "kind": "structured_response",
+            "lines": 4
+          },
+          "marking": {
+            "mode": "rubric_ai",
+            "maxScore": 2,
+            "modelAnswer": "With insufficient main memory, the computer has to keep loading and unloading data and instructions between main memory and secondary storage. Secondary storage is much slower than main memory, so this slows the computer down. With more main memory, more of the applications' data and instructions can stay in memory where the processor can access them quickly.",
+            "rubricPoints": [
+              {
+                "text": "States that without enough main memory, data/instructions must frequently be loaded from and unloaded to secondary storage.",
+                "marks": 1
+              },
+              {
+                "text": "States that secondary storage is slower than main memory, OR that more RAM lets more data/instructions stay in memory for quick access by the processor.",
+                "marks": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "q2c",
+          "label": "2(c)",
+          "type": "structured_response",
+          "prompt": "The table shows the first 6 bytes of a computer's memory. The processor needs to READ the data stored at address 4. Describe how the address bus and the data bus are used to do this. Your answer should state what is sent on each bus and the direction it travels.",
+          "marks": 3,
+          "outcomeId": "1.1.3",
+          "difficulty": "standard",
+          "stimulus": [
+            {
+              "type": "table",
+              "title": "Memory contents",
+              "columns": [
+                "Address",
+                "Contents"
+              ],
+              "rows": [
+                [
+                  "0",
+                  "01001011"
+                ],
+                [
+                  "1",
+                  "10100101"
+                ],
+                [
+                  "2",
+                  "01100101"
+                ],
+                [
+                  "3",
+                  "10110010"
+                ],
+                [
+                  "4",
+                  "01100100"
+                ],
+                [
+                  "5",
+                  "01110101"
+                ]
+              ]
+            }
+          ],
+          "response": {
+            "kind": "structured_response",
+            "lines": 5
+          },
+          "marking": {
+            "mode": "rubric_ai",
+            "maxScore": 3,
+            "modelAnswer": "The processor places the address 4 on the address bus, which carries it from the processor to memory (the address bus is uni-directional). The memory then sends a copy of the data stored at address 4, 01100100, back to the processor on the data bus, which travels from memory to the processor.",
+            "rubricPoints": [
+              {
+                "text": "Address 4 is sent on the address bus.",
+                "marks": 1
+              },
+              {
+                "text": "The address travels from the processor to memory (address bus is one-way / uni-directional).",
+                "marks": 1
+              },
+              {
+                "text": "A copy of the data at address 4 (01100100) is sent from memory to the processor on the data bus.",
+                "marks": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "q2d",
+          "label": "2(d)",
+          "type": "code_output_table",
+          "prompt": "Using the SAME starting memory contents shown in 2(c), the processor carries out these two instructions in order:\n1. Write 11110000 to address 2.\n2. Read the data at address 0, then write that data to address 5.\n\nState the contents of address 2 and address 5 after both instructions. Write exactly 8 binary digits with no spaces.",
+          "marks": 2,
+          "outcomeId": "1.1.3",
+          "difficulty": "standard",
+          "response": {
+            "kind": "code_output_table",
+            "rows": [
+              {
+                "id": "addr2",
+                "label": "Address 2"
+              },
+              {
+                "id": "addr5",
+                "label": "Address 5"
+              }
+            ]
+          },
+          "marking": {
+            "mode": "code_output_table",
+            "rows": [
+              {
+                "id": "addr2",
+                "label": "Address 2",
+                "expectedOutput": "11110000",
+                "marks": 1
+              },
+              {
+                "id": "addr5",
+                "label": "Address 5",
+                "expectedOutput": "01001011",
+                "marks": 1
+              }
+            ],
+            "caseSensitive": true
+          }
+        },
+        {
+          "id": "q2e",
+          "label": "2(e)",
+          "type": "structured_response",
+          "outcomeId": "1.1.3",
+          "difficulty": "standard",
+          "prompt": "Explain why the data bus is bi-directional but the address bus is uni-directional.",
+          "marks": 2,
+          "response": {
+            "kind": "structured_response",
+            "lines": 4
+          },
+          "marking": {
+            "mode": "rubric_ai",
+            "maxScore": 2,
+            "modelAnswer": "Data must travel both ways: from memory to the processor when reading, and from the processor to memory when writing, so the data bus is bi-directional. Addresses are only ever specified by the processor and sent to memory, so the address bus only needs to carry information in one direction.",
+            "rubricPoints": [
+              {
+                "text": "Data bus: data travels from memory to processor when reading AND from processor to memory when writing.",
+                "marks": 1
+              },
+              {
+                "text": "Address bus: addresses are only sent from the processor to memory (only the processor specifies addresses).",
+                "marks": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "number": "3",
+      "title": "Storage Media and I/O Interfaces",
+      "marks": 7,
+      "outcomeId": "1.1.5",
+      "parts": [
+        {
+          "id": "q3a",
+          "label": "3(a)",
+          "type": "structured_response",
+          "prompt": "A photographer wants to keep a backup of 4 TB of photos at home. The backup will not be moved around, and the photographer wants to keep the cost as low as possible. Suggest the most suitable type of secondary storage medium and give a reason for your choice.",
+          "marks": 2,
+          "outcomeId": "1.1.5",
+          "difficulty": "standard",
+          "response": {
+            "kind": "structured_response",
+            "lines": 3
+          },
+          "marking": {
+            "mode": "rubric_ai",
+            "maxScore": 2,
+            "modelAnswer": "A magnetic hard disk. It has the lowest cost per GB of the storage media types and is available in capacities of terabytes, so it can hold 4 TB cheaply. Portability is not needed, so its heavier weight does not matter.",
+            "rubricPoints": [
+              {
+                "text": "Suggests magnetic storage (e.g. a hard disk / external hard drive; magnetic tape also accepted).",
+                "marks": 1
+              },
+              {
+                "text": "Justifies with lowest cost per GB AND/OR capacity in the terabyte range. The reason mark is only awarded if a magnetic medium was suggested.",
+                "marks": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "q3b",
+          "label": "3(b)",
+          "type": "structured_response",
+          "prompt": "The owner of a laptop replaces its hard disk with a solid-state drive (SSD). Identify two improvements the owner is likely to experience.",
+          "marks": 2,
+          "outcomeId": "1.1.5",
+          "difficulty": "easy",
+          "response": {
+            "kind": "structured_response",
+            "lines": 3
+          },
+          "marking": {
+            "mode": "rubric_ai",
+            "maxScore": 2,
+            "modelAnswer": "1. Faster access speeds, e.g. the laptop starts up and opens files more quickly.\n2. More durable: less likely to be damaged by impact (e.g. if the laptop is dropped) or by magnetic fields, as it has no moving parts.",
+            "rubricPoints": [
+              {
+                "text": "Any one valid improvement: faster read/write access speed; more resistant to impact/temperature changes/magnetic fields; lighter; quieter; uses less power (longer battery life) because it has no moving parts.",
+                "marks": 1
+              },
+              {
+                "text": "A second, different valid improvement from the same list.",
+                "marks": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "q3c",
+          "label": "3(c)",
+          "type": "single_choice",
+          "prompt": "A gamer wants to install a new graphics card inside their desktop computer. Which input/output interface is most suitable for connecting the graphics card?",
+          "marks": 1,
+          "outcomeId": "1.1.4",
+          "difficulty": "easy",
+          "response": {
+            "kind": "single_choice",
+            "options": [
+              {
+                "value": "usb",
+                "label": "USB"
+              },
+              {
+                "value": "hdmi",
+                "label": "HDMI"
+              },
+              {
+                "value": "pcie",
+                "label": "PCI Express"
+              }
+            ]
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "pcie"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q3d",
+          "label": "3(d)",
+          "type": "structured_response",
+          "outcomeId": "1.1.4",
+          "difficulty": "standard",
+          "prompt": "A PCI Express connector on a motherboard is labelled x16. Explain what \"x16\" means and how an x16 connector compares with an x4 connector.",
+          "marks": 2,
+          "response": {
+            "kind": "structured_response",
+            "lines": 3
+          },
+          "marking": {
+            "mode": "rubric_ai",
+            "maxScore": 2,
+            "modelAnswer": "x16 means the connector has 16 lanes for transferring data. Since the maximum speed increases with the number of lanes, an x16 connector has a higher maximum speed than an x4 connector (it is also physically longer).",
+            "rubricPoints": [
+              {
+                "text": "States that x16 means 16 lanes (for transferring data).",
+                "marks": 1
+              },
+              {
+                "text": "States that more lanes gives a higher maximum speed, so x16 is faster than x4 (accept: x16 connector is longer).",
+                "marks": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "q4",
+      "number": "4",
+      "title": "Number Systems and Conversion",
+      "marks": 10,
+      "outcomeId": "1.2.2",
+      "parts": [
+        {
+          "id": "q4a",
+          "label": "4(a)",
+          "type": "short_text",
+          "prompt": "Convert the binary number 1011 0110₂ to denary.",
+          "marks": 1,
+          "difficulty": "easy",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "182"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q4b",
+          "label": "4(b)",
+          "type": "short_text",
+          "prompt": "Convert the denary number 200 to an 8-bit binary number.",
+          "marks": 1,
+          "difficulty": "easy",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "11001000",
+              "1100 1000"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q4c",
+          "label": "4(c)",
+          "type": "short_text",
+          "prompt": "Convert the hexadecimal number 3AF₁₆ to denary.",
+          "marks": 1,
+          "difficulty": "standard",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "943"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q4d",
+          "label": "4(d)",
+          "type": "short_text",
+          "prompt": "Convert the denary number 2024 to hexadecimal.",
+          "marks": 1,
+          "difficulty": "standard",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "7E8",
+              "0x7E8",
+              "7E8₁₆",
+              "7E816"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q4e",
+          "label": "4(e)",
+          "type": "short_text",
+          "prompt": "Convert the binary number 1101 0111 1010₂ to hexadecimal.",
+          "marks": 1,
+          "difficulty": "easy",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "D7A",
+              "0xD7A",
+              "D7A₁₆",
+              "D7A16"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q4f",
+          "label": "4(f)",
+          "type": "short_text",
+          "prompt": "Calculate the largest denary number that can be represented using 10 bits (positive whole numbers only).",
+          "marks": 1,
+          "difficulty": "standard",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "1023",
+              "1,023"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q4g",
+          "label": "4(g)",
+          "type": "structured_response",
+          "prompt": "Explain why hexadecimal is often used instead of binary to show values such as memory contents.",
+          "marks": 2,
+          "outcomeId": "1.2.2",
+          "difficulty": "standard",
+          "response": {
+            "kind": "structured_response",
+            "lines": 3
+          },
+          "marking": {
+            "mode": "rubric_ai",
+            "maxScore": 2,
+            "modelAnswer": "Each hexadecimal digit maps exactly to 4 binary digits, so one byte can be written using just 2 hex digits instead of 8 bits. This makes values much shorter and more compact, so they are easier for people to read, remember and communicate with fewer mistakes.",
+            "rubricPoints": [
+              {
+                "text": "States that one hex digit represents exactly 4 bits (or a byte is exactly 2 hex digits), so conversion between hex and binary is easy.",
+                "marks": 1
+              },
+              {
+                "text": "States that hex is shorter/more compact, so it is easier for humans to read/communicate and less prone to errors.",
+                "marks": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "q4h",
+          "label": "4(h)",
+          "type": "structured_response",
+          "outcomeId": "1.2.2",
+          "difficulty": "standard",
+          "prompt": "Describe the division by 2 method for converting a denary number to binary.",
+          "marks": 2,
+          "response": {
+            "kind": "structured_response",
+            "lines": 4
+          },
+          "marking": {
+            "mode": "rubric_ai",
+            "maxScore": 2,
+            "modelAnswer": "Repeatedly divide the denary number by 2, writing down the quotient and remainder each time, and continue dividing the quotient until the quotient is 0. The binary number is the remainders read from the last to the first (bottom up).",
+            "rubricPoints": [
+              {
+                "text": "Repeatedly divide by 2, recording the remainder each time, until the quotient is 0.",
+                "marks": 1
+              },
+              {
+                "text": "Binary number is formed by reading the remainders from the last one to the first (bottom up).",
+                "marks": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "q5",
+      "number": "5",
+      "title": "Two's Complement",
+      "marks": 8,
+      "outcomeId": "1.2.3",
+      "parts": [
+        {
+          "id": "q5a",
+          "label": "5(a)",
+          "type": "code_output_table",
+          "prompt": "Represent -45 using 8-bit two's complement. Fill in both rows, writing exactly 8 binary digits with no spaces.",
+          "marks": 2,
+          "difficulty": "standard",
+          "response": {
+            "kind": "code_output_table",
+            "rows": [
+              {
+                "id": "pos",
+                "label": "45 as an 8-bit binary number"
+              },
+              {
+                "id": "neg",
+                "label": "-45 in 8-bit two's complement"
+              }
+            ]
+          },
+          "marking": {
+            "mode": "code_output_table",
+            "rows": [
+              {
+                "id": "pos",
+                "label": "45 as an 8-bit binary number",
+                "expectedOutput": "00101101",
+                "marks": 1
+              },
+              {
+                "id": "neg",
+                "label": "-45 in 8-bit two's complement",
+                "expectedOutput": "11010011",
+                "marks": 1
+              }
+            ],
+            "caseSensitive": true
+          }
+        },
+        {
+          "id": "q5b",
+          "label": "5(b)",
+          "type": "short_text",
+          "prompt": "The 8 bits 1110 0110 use two's complement to represent a number. State the denary number being represented.",
+          "marks": 1,
+          "difficulty": "standard",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "-26"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q5c",
+          "label": "5(c)",
+          "type": "code_output_table",
+          "prompt": "State the smallest and largest denary numbers that can be represented using 6-bit two's complement.",
+          "marks": 2,
+          "difficulty": "standard",
+          "response": {
+            "kind": "code_output_table",
+            "rows": [
+              {
+                "id": "min",
+                "label": "Smallest"
+              },
+              {
+                "id": "max",
+                "label": "Largest"
+              }
+            ]
+          },
+          "marking": {
+            "mode": "code_output_table",
+            "rows": [
+              {
+                "id": "min",
+                "label": "Smallest",
+                "expectedOutput": "-32",
+                "marks": 1
+              },
+              {
+                "id": "max",
+                "label": "Largest",
+                "expectedOutput": "31",
+                "marks": 1
+              }
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q5d",
+          "label": "5(d)",
+          "type": "short_text",
+          "prompt": "A computer uses 4-bit two's complement. It adds 0111 and 0001 and stores the result 1000. State the denary number that 1000 represents in 4-bit two's complement.",
+          "marks": 1,
+          "difficulty": "challenging",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "-8"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q5e",
+          "label": "5(e)",
+          "type": "short_text",
+          "prompt": "State the name given to the behaviour in 5(d), where the result exceeds the range that can be represented and \"wraps around\".",
+          "marks": 1,
+          "difficulty": "standard",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "integer overflow",
+              "overflow",
+              "an integer overflow",
+              "overflow error"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q5f",
+          "label": "5(f)",
+          "type": "short_text",
+          "outcomeId": "1.2.3",
+          "difficulty": "standard",
+          "prompt": "Represent -1 using 8-bit two's complement.",
+          "marks": 1,
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "11111111",
+              "1111 1111"
+            ],
+            "caseSensitive": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "q6",
+      "number": "6",
+      "title": "Representing Text with ASCII",
+      "marks": 6,
+      "outcomeId": "1.2.4",
+      "stimulus": [
+        {
+          "type": "table",
+          "title": "Extract of ASCII codes (hexadecimal)",
+          "columns": [
+            "Character",
+            "Hex code"
+          ],
+          "rows": [
+            [
+              "(space)",
+              "20"
+            ],
+            [
+              "!",
+              "21"
+            ],
+            [
+              "0",
+              "30"
+            ],
+            [
+              "3",
+              "33"
+            ],
+            [
+              "A",
+              "41"
+            ],
+            [
+              "G",
+              "47"
+            ],
+            [
+              "a",
+              "61"
+            ]
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "id": "q6a",
+          "label": "6(a)",
+          "type": "structured_response",
+          "prompt": "Explain how many different characters can be represented using Extended ASCII.",
+          "marks": 2,
+          "difficulty": "standard",
+          "response": {
+            "kind": "structured_response",
+            "lines": 3
+          },
+          "marking": {
+            "mode": "rubric_ai",
+            "maxScore": 2,
+            "modelAnswer": "Extended ASCII uses 8 bits (1 byte) to represent each character. 8 bits give 2^8 = 256 different combinations, from 0000 0000 to 1111 1111, so 256 different characters can be represented.",
+            "rubricPoints": [
+              {
+                "text": "States that Extended ASCII uses 8 bits / 1 byte per character.",
+                "marks": 1
+              },
+              {
+                "text": "States 2^8 = 256 characters (256 alone without link to 8 bits does not earn both marks).",
+                "marks": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "q6b",
+          "label": "6(b)",
+          "type": "short_text",
+          "prompt": "Decode the following bytes, given in hexadecimal, into text: 47 33 21",
+          "marks": 1,
+          "difficulty": "easy",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "G3!"
+            ],
+            "caseSensitive": true
+          }
+        },
+        {
+          "id": "q6c",
+          "label": "6(c)",
+          "type": "short_text",
+          "prompt": "Letters of the alphabet have consecutive ASCII codes. Using the table, state the ASCII code of the lower-case letter 'k' in hexadecimal.",
+          "marks": 1,
+          "difficulty": "challenging",
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "6B",
+              "0x6B",
+              "6B₁₆",
+              "6B16"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q6d",
+          "label": "6(d)",
+          "type": "code_output_table",
+          "outcomeId": "1.2.4",
+          "difficulty": "standard",
+          "prompt": "In Python, ord() returns the ASCII code of a character and chr() returns the character for an ASCII code. State the exact output of each program.",
+          "marks": 2,
+          "stimulus": [
+            {
+              "type": "table",
+              "columns": [
+                "Part",
+                "Program"
+              ],
+              "rows": [
+                [
+                  "(i)",
+                  "print(ord(\"C\") - ord(\"A\"))"
+                ],
+                [
+                  "(ii)",
+                  "print(chr(ord(\"a\") + 25))"
+                ]
+              ]
+            }
+          ],
+          "response": {
+            "kind": "code_output_table",
+            "rows": [
+              {
+                "id": "i",
+                "label": "(i)"
+              },
+              {
+                "id": "ii",
+                "label": "(ii)"
+              }
+            ]
+          },
+          "marking": {
+            "mode": "code_output_table",
+            "rows": [
+              {
+                "id": "i",
+                "expectedOutput": "2",
+                "marks": 1
+              },
+              {
+                "id": "ii",
+                "expectedOutput": "z",
+                "marks": 1
+              }
+            ],
+            "caseSensitive": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "q7",
+      "number": "7",
+      "title": "Representing Information as Bits",
+      "marks": 4,
+      "outcomeId": "1.2.1",
+      "stimulus": [
+        {
+          "type": "text",
+          "text": "A car park uses 8 bits to store the status of each level.\n• Bit 1 (leftmost): 1 if the entry gantry is open, 0 if it is closed.\n• Bit 2: 1 if the level is full, 0 if it is not full.\n• Bits 3 to 8: the number of free parking lots, as a binary number.\n\nFor example, 1000 1010 means the gantry is open, the level is not full, and there are 10 free lots."
+        }
+      ],
+      "parts": [
+        {
+          "id": "q7a",
+          "label": "7(a)",
+          "type": "structured_response",
+          "difficulty": "standard",
+          "prompt": "State what is indicated by the bits 1001 0111.",
+          "marks": 2,
+          "response": {
+            "kind": "structured_response",
+            "lines": 2
+          },
+          "marking": {
+            "mode": "rubric_ai",
+            "maxScore": 2,
+            "modelAnswer": "The gantry is open, the level is not full, and there are 23 free lots.",
+            "rubricPoints": [
+              {
+                "text": "Gantry is open AND level is not full.",
+                "marks": 1
+              },
+              {
+                "text": "23 free lots.",
+                "marks": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "q7b",
+          "label": "7(b)",
+          "type": "short_text",
+          "difficulty": "standard",
+          "prompt": "Write the 8 bits for a level where the gantry is closed, the level is not full, and there are 45 free lots.",
+          "marks": 1,
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "00101101",
+              "0010 1101"
+            ],
+            "caseSensitive": false
+          }
+        },
+        {
+          "id": "q7c",
+          "label": "7(c)",
+          "type": "short_text",
+          "difficulty": "challenging",
+          "prompt": "State the largest number of free lots that this system can represent for one level.",
+          "marks": 1,
+          "response": {
+            "kind": "short_text",
+            "lines": 1
+          },
+          "marking": {
+            "mode": "exact",
+            "acceptedAnswers": [
+              "63"
+            ],
+            "caseSensitive": false
+          }
+        }
+      ]
+    }
+  ]
+}

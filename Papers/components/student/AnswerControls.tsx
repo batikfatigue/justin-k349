@@ -1,5 +1,6 @@
 import React from "react";
 import type { ResponseSchema, StudentAnswer } from "@/lib/domain";
+import { CodeEditor } from "@/components/student/CodeEditor";
 
 export function AnswerControls({
   partId,
@@ -102,18 +103,19 @@ export function AnswerControls({
     );
   }
 
-  const isCode = responseSchema?.kind === "code_writing";
+  if (responseSchema?.kind === "code_writing") {
+    return (
+      <div className="code-editor-field">
+        <span>Answer</span>
+        <CodeEditor name={`part-${partId}`} defaultValue={value} rows={responseSchema.lines ?? 10} />
+      </div>
+    );
+  }
 
   return (
     <label>
       Answer
-      <textarea
-        name={`part-${partId}`}
-        className={isCode ? "code-block" : undefined}
-        rows={responseSchema?.lines ?? (isCode ? 10 : 5)}
-        defaultValue={value}
-        spellCheck={!isCode}
-      />
+      <textarea name={`part-${partId}`} rows={responseSchema?.lines ?? 5} defaultValue={value} />
     </label>
   );
 }

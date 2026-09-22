@@ -8,6 +8,7 @@ export default function TutorLoginPage({
 }) {
   const hasError = searchParams.error === "invalid";
   const hasConfigError = searchParams.error === "misconfigured";
+  const hasThrottleError = searchParams.error === "throttled";
 
   return (
     <main className="section">
@@ -19,6 +20,9 @@ export default function TutorLoginPage({
       {hasError ? <p className="notice error">The password did not match.</p> : null}
       {hasConfigError ? (
         <p className="notice error">Tutor sign-in is not configured. Set TUTOR_PASSWORD_HASH to a bcrypt hash.</p>
+      ) : null}
+      {hasThrottleError ? (
+        <p className="notice error">Too many sign-in attempts. Try again later.</p>
       ) : null}
       <form action={loginTutorAction} className="card stack">
         <label>
